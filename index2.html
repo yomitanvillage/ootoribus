@@ -766,7 +766,17 @@ body {
 
 <div class="main">
   <button class="livemap-btn" onclick="openLiveMap()">
-    🚌 ライブマップ
+    <svg width="30" height="21" viewBox="-20 -13 40 29" aria-hidden="true">
+      <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#fff" stroke-width="1.4"/>
+      <path d="M17.4 9.5 C10 8 7.5 1 13 -3.5 L17.4 -3.5 Z" fill="#2a6cb5" opacity="0.9"/>
+      <rect x="-17" y="-8.5" width="6.5" height="11" rx="2" fill="#233240"/>
+      <rect x="-8.5" y="-8.5" width="7.5" height="17.5" rx="1.5" fill="#233240"/>
+      <rect x="1" y="-8.5" width="13.5" height="8.5" rx="1.5" fill="#233240"/>
+      <rect x="2.5" y="2.5" width="9" height="4.5" rx="1.5" fill="#fff" stroke="#e8528a" stroke-width="0.8"/>
+      <circle cx="-10.5" cy="10" r="4" fill="#222"/><circle cx="-10.5" cy="10" r="1.7" fill="#aaa"/>
+      <circle cx="10.5" cy="10" r="4" fill="#222"/><circle cx="10.5" cy="10" r="1.7" fill="#aaa"/>
+    </svg>
+    ライブマップ
     <span class="lm-btn-sub">いまバスはどこ？</span>
   </button>
 
@@ -816,7 +826,16 @@ body {
 <!-- ライブマップ -->
 <div class="livemap-overlay" id="livemap-overlay">
   <div class="lm-header">
-    <div class="lm-title">🚌 ライブマップ<span class="lm-day" id="lm-daylabel"></span></div>
+    <div class="lm-title"><svg width="27" height="19" viewBox="-20 -13 40 29" aria-hidden="true" style="vertical-align:-4px;margin-right:3px">
+      <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#c96e97" stroke-width="1.2"/>
+      <path d="M17.4 9.5 C10 8 7.5 1 13 -3.5 L17.4 -3.5 Z" fill="#2a6cb5" opacity="0.9"/>
+      <rect x="-17" y="-8.5" width="6.5" height="11" rx="2" fill="#233240"/>
+      <rect x="-8.5" y="-8.5" width="7.5" height="17.5" rx="1.5" fill="#233240"/>
+      <rect x="1" y="-8.5" width="13.5" height="8.5" rx="1.5" fill="#233240"/>
+      <rect x="2.5" y="2.5" width="9" height="4.5" rx="1.5" fill="#fff" stroke="#e8528a" stroke-width="0.8"/>
+      <circle cx="-10.5" cy="10" r="4" fill="#222"/><circle cx="-10.5" cy="10" r="1.7" fill="#aaa"/>
+      <circle cx="10.5" cy="10" r="4" fill="#222"/><circle cx="10.5" cy="10" r="1.7" fill="#aaa"/>
+    </svg>ライブマップ<span class="lm-day" id="lm-daylabel"></span></div>
     <div class="lm-clock" id="lm-clock">--:--:--</div>
     <button class="lm-close" onclick="closeLiveMap()" aria-label="閉じる">✕</button>
   </div>
