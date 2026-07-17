@@ -1635,7 +1635,7 @@ function setDay(dt){
 /* ═══════════════════════════════════════════════════════════
    ライブマップ（時刻表ベースの推定位置表示）
    ═══════════════════════════════════════════════════════════ */
-const LM_W = 480, LM_PAD = 24;
+const LM_W = 480, LM_PAD = 24, LM_PAD_TOP = 105;  // 上部は凡例と重ならないよう余白を確保
 let lmGeo = null, lmTimer = null, lmSelBus = null;
 let lmScale = 1, lmTx = 0, lmTy = 0;
 
@@ -1671,12 +1671,12 @@ function lmProject(){
   }
   const kx = Math.cos((minLa+maxLa)/2 * Math.PI/180);
   const scale = (LM_W - 2*LM_PAD) / ((maxLo-minLo)*kx);
-  const H = Math.round((maxLa-minLa)*scale + 2*LM_PAD);
+  const H = Math.round((maxLa-minLa)*scale + LM_PAD + LM_PAD_TOP);
   return {minLo, maxLa, kx, scale, H};
 }
 function lmXY(la, lo){
   const g = lmGeo;
-  return [LM_PAD + (lo-g.minLo)*g.kx*g.scale, LM_PAD + (g.maxLa-la)*g.scale];
+  return [LM_PAD + (lo-g.minLo)*g.kx*g.scale, LM_PAD_TOP + (g.maxLa-la)*g.scale];
 }
 
 /* 静的レイヤー（路線・停留所・主要ラベル） */
@@ -1782,6 +1782,7 @@ function lmTick(){
 
   const buses = lmBusPositions();
   document.getElementById("lm-empty").style.display = buses.length ? "none" : "flex";
+  lmUpdateRouteDim(new Set(buses.map(b=>b.r.route)));
 
   /* 鳳バス デフォルメイラスト（アイコン全体をscaleするので線幅も比例維持） */
   const bk = 1/Math.sqrt(lmScale);   // 拡大時にアイコンが大きくなりすぎないよう調整
@@ -1849,16 +1850,21 @@ function lmBuildLegend(){
 function lmToggleRoute(rt){
   lmSelRoute = (lmSelRoute === rt) ? null : rt;
   lmBuildLegend();
-  lmUpdateRouteDim();
   lmTick();
   if(lmSelRoute && typeof gtag !== 'undefined'){
     gtag('event', 'live_map_route_filter', {'event_category':'ライブマップ', 'event_label': rt});
   }
 }
-function lmUpdateRouteDim(){
+function lmUpdateRouteDim(activeRoutes){
   document.querySelectorAll("#lm-routelines g[data-route]").forEach(g=>{
-    const on = !lmSelRoute || g.getAttribute("data-route") === lmSelRoute;
-    g.setAttribute("opacity", on ? "1" : "0.12");
+    const rt = g.getAttribute("data-route");
+    let op = "1";
+    if(lmSelRoute){
+      op = rt === lmSelRoute ? "1" : "0.12";       // 凡例タップによる強調
+    } else if(activeRoutes && !activeRoutes.has(rt)){
+      op = "0.25";                                  // 現在運行していない路線は薄く
+    }
+    g.setAttribute("opacity", op);
   });
 }
 
@@ -2026,7 +2032,6 @@ function openLiveMap(){
   lmSelBus = null;
   lmSelRoute = null;
   lmBuildLegend();
-  lmUpdateRouteDim();
   document.getElementById("livemap-overlay").classList.add("open");
   document.body.style.overflow = "hidden";
   lmTick();
