@@ -587,6 +587,81 @@ body {
 }
 
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+/* ── ライブマップ ── */
+.livemap-btn{
+  width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:13px 12px; margin:0 0 16px; border:none; border-radius:12px;
+  background:#e8528a;
+  color:#fff; font-weight:700; font-size:14.5px; font-family:inherit;
+  cursor:pointer; box-shadow:0 2px 10px rgba(232,82,138,.3);
+}
+.livemap-btn:active{ transform:scale(.98); }
+.livemap-btn .lm-btn-sub{ font-size:11px; font-weight:400; opacity:.9; }
+.livemap-overlay{
+  position:fixed; inset:0; background:#eef2f7; z-index:500;
+  display:none; flex-direction:column;
+}
+.livemap-overlay.open{ display:flex; }
+.lm-header{
+  display:flex; align-items:center; gap:10px; padding:10px 14px;
+  background:#fff; border-bottom:1px solid #e2e8f0; flex-shrink:0;
+}
+.lm-title{ font-size:15px; font-weight:700; color:#333; flex:1; min-width:0; }
+.lm-title .lm-day{ font-size:11px; font-weight:600; color:#fff; background:#2a6cb5; border-radius:10px; padding:2px 8px; margin-left:6px; vertical-align:middle; }
+.lm-clock{ font-family:'DM Mono',monospace; font-size:15px; font-weight:500; color:#2a6cb5; }
+.lm-close{
+  border:none; background:#f1f5f9; color:#555; width:32px; height:32px;
+  border-radius:50%; font-size:15px; cursor:pointer; flex-shrink:0;
+}
+.lm-map-wrap{ position:relative; flex:1; overflow:hidden; background:#d7e7f2; }
+#lm-svg{ width:100%; height:100%; display:block; touch-action:none; cursor:grab; }
+#lm-svg:active{ cursor:grabbing; }
+.lm-zoom{
+  position:absolute; right:10px; bottom:12px; display:flex; flex-direction:column; gap:6px;
+}
+.lm-zoom button{
+  width:38px; height:38px; border:none; border-radius:10px; background:#fff;
+  color:#2a6cb5; font-size:18px; font-weight:700; cursor:pointer;
+  box-shadow:0 1px 5px rgba(0,0,0,.18); font-family:inherit;
+}
+.lm-empty{
+  position:absolute; inset:0; display:flex;
+  align-items:center; justify-content:center; pointer-events:none;
+}
+.lm-empty-card{
+  display:flex; flex-direction:column; gap:6px; align-items:center;
+  background:rgba(255,255,255,.95); border-radius:14px; padding:18px 22px;
+  color:#8a94a3; font-size:13.5px; font-weight:600; text-align:center;
+  box-shadow:0 2px 10px rgba(0,0,0,.12);
+}
+.lm-businfo{
+  flex-shrink:0; background:#fff; border-top:1px solid #e2e8f0;
+  padding:10px 14px; font-size:13px; color:#333; display:none;
+}
+.lm-businfo.show{ display:block; }
+.lm-businfo .lm-bi-label{ font-weight:700; }
+.lm-businfo .lm-bi-next{ color:#e8528a; font-weight:600; }
+.lm-note{
+  flex-shrink:0; background:#fff8ec; border-bottom:1px solid #f3e3c3;
+  padding:9px 14px; font-size:12.5px; line-height:1.55; color:#8a6d3b; font-weight:500;
+}
+.lm-businfo{
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
+}
+.lm-bus{ cursor:pointer; }
+.lm-legend{
+  position:absolute; left:8px; top:8px; display:flex; flex-direction:column; gap:5px;
+}
+.lm-legend-btn{
+  display:flex; align-items:center; gap:6px; padding:5px 10px 5px 7px;
+  border:2px solid transparent; border-radius:16px; background:rgba(255,255,255,.92);
+  font-family:inherit; font-size:11.5px; font-weight:600; color:#444;
+  cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.15); text-align:left;
+}
+.lm-legend-btn.active{ background:#fff; color:#222; }
+.lm-legend-dot{
+  width:11px; height:11px; border-radius:50%; flex-shrink:0;
+}
 </style>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-JCJN77EC4R"></script>
@@ -690,6 +765,21 @@ body {
 </div>
 
 <div class="main">
+  <button class="livemap-btn" onclick="openLiveMap()">
+    <svg width="30" height="21" viewBox="-20 -13 40 29" aria-hidden="true">
+      <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#fff" stroke-width="1.4"/>
+      <path d="M17.4 9.5 C10 8 7.5 1 13 -3.5 L17.4 -3.5 Z" fill="#2a6cb5" opacity="0.9"/>
+      <rect x="-17" y="-8.5" width="6.5" height="11" rx="2" fill="#233240"/>
+      <rect x="-8.5" y="-8.5" width="7.5" height="17.5" rx="1.5" fill="#233240"/>
+      <rect x="1" y="-8.5" width="13.5" height="8.5" rx="1.5" fill="#233240"/>
+      <rect x="2.5" y="2.5" width="9" height="4.5" rx="1.5" fill="#fff" stroke="#e8528a" stroke-width="0.8"/>
+      <circle cx="-10.5" cy="10" r="4" fill="#222"/><circle cx="-10.5" cy="10" r="1.7" fill="#aaa"/>
+      <circle cx="10.5" cy="10" r="4" fill="#222"/><circle cx="10.5" cy="10" r="1.7" fill="#aaa"/>
+    </svg>
+    ライブマップ
+    <span class="lm-btn-sub">いまバスはどこ？</span>
+  </button>
+
   <div class="section-label">バス停を検索</div>
 
   <div class="stop-search-wrap">
@@ -728,8 +818,56 @@ body {
   <div class="footer">
     時刻表：令和2年5月15日改定版<br>
     お問い合わせ：読谷村役場 生活環境課 <a href="tel:0989829214">098-982-9214</a><br>
-    沖縄バス 読谷出張所 <a href="tel:0989582015">098-958-2015</a>
+    沖縄バス 読谷出張所 <a href="tel:0989582015">098-958-2015</a><br>
+    地図の行政界：国土交通省「国土数値情報（行政区域データ）」を加工して作成
   </div>
+</div>
+
+<!-- ライブマップ -->
+<div class="livemap-overlay" id="livemap-overlay">
+  <div class="lm-header">
+    <div class="lm-title"><svg width="27" height="19" viewBox="-20 -13 40 29" aria-hidden="true" style="vertical-align:-4px;margin-right:3px">
+      <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#c96e97" stroke-width="1.2"/>
+      <path d="M17.4 9.5 C10 8 7.5 1 13 -3.5 L17.4 -3.5 Z" fill="#2a6cb5" opacity="0.9"/>
+      <rect x="-17" y="-8.5" width="6.5" height="11" rx="2" fill="#233240"/>
+      <rect x="-8.5" y="-8.5" width="7.5" height="17.5" rx="1.5" fill="#233240"/>
+      <rect x="1" y="-8.5" width="13.5" height="8.5" rx="1.5" fill="#233240"/>
+      <rect x="2.5" y="2.5" width="9" height="4.5" rx="1.5" fill="#fff" stroke="#e8528a" stroke-width="0.8"/>
+      <circle cx="-10.5" cy="10" r="4" fill="#222"/><circle cx="-10.5" cy="10" r="1.7" fill="#aaa"/>
+      <circle cx="10.5" cy="10" r="4" fill="#222"/><circle cx="10.5" cy="10" r="1.7" fill="#aaa"/>
+    </svg>ライブマップ<span class="lm-day" id="lm-daylabel"></span></div>
+    <div class="lm-clock" id="lm-clock">--:--:--</div>
+    <button class="lm-close" onclick="closeLiveMap()" aria-label="閉じる">✕</button>
+  </div>
+  <div class="lm-note">⚠️ 時刻表に基づく推定位置です。遅延・迂回など実際の運行状況は反映されません。停留所間は直線で表示しています。</div>
+  <div class="lm-map-wrap">
+    <svg id="lm-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+      <g id="lm-viewport">
+        <g id="lm-static"></g>
+        <g id="lm-buses"></g>
+        <g id="lm-user"></g>
+      </g>
+    </svg>
+    <div class="lm-legend" id="lm-legend"></div>
+    <div class="lm-zoom">
+      <button onclick="lmZoom(1.4)" aria-label="拡大">＋</button>
+      <button onclick="lmZoom(0.714)" aria-label="縮小">－</button>
+      <button onclick="lmResetView()" aria-label="全体表示" style="font-size:13px">全体</button>
+      <button onclick="lmLocate()" aria-label="現在地" style="font-size:15px">📍</button>
+    </div>
+    <div class="lm-empty" id="lm-empty" style="display:none">
+      <div class="lm-empty-card">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#8a94a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="16" height="13" rx="2.5"/>
+          <line x1="4" y1="10" x2="20" y2="10"/>
+          <circle cx="8.5" cy="17" r="1.8" fill="#8a94a3"/>
+          <circle cx="15.5" cy="17" r="1.8" fill="#8a94a3"/>
+        </svg>
+        <div>現在運行中のバスはありません</div>
+      </div>
+    </div>
+  </div>
+  <div class="lm-businfo" id="lm-businfo"></div>
 </div>
 
 <script>
@@ -1494,7 +1632,417 @@ function setDay(dt){
   renderStops(); renderCards();
 }
 
-/* GPS機能なし版 */
+/* ═══════════════════════════════════════════════════════════
+   ライブマップ（時刻表ベースの推定位置表示）
+   ═══════════════════════════════════════════════════════════ */
+const LM_W = 480, LM_PAD = 24;
+let lmGeo = null, lmTimer = null, lmSelBus = null;
+let lmScale = 1, lmTx = 0, lmTy = 0;
+
+/* 読谷村の行政境界（出典: 国土交通省 国土数値情報「行政区域データ」を
+   スマートニュース メディア研究所が簡素化加工したものを使用） */
+const LM_LAND = [
+  [26.41588,127.78604],[26.41407,127.78503],[26.41053,127.78429],[26.40798,127.78512],[26.40572,127.78549],
+  [26.40395,127.78471],[26.40473,127.78222],[26.4014,127.78111],[26.39633,127.77752],[26.39633,127.7759],
+  [26.39107,127.77305],[26.38663,127.77259],[26.38514,127.77148],[26.38309,127.77185],[26.37947,127.7689],
+  [26.37494,127.76904],[26.37284,127.76807],[26.37153,127.76908],[26.36926,127.76765],[26.37004,127.76457],
+  [26.36799,127.76369],[26.36869,127.7612],[26.36774,127.75701],[26.36807,127.75502],[26.36577,127.75106],
+  [26.36416,127.74926],[26.36338,127.74627],[26.36128,127.7465],[26.36276,127.74189],[26.36186,127.73834],
+  [26.36416,127.73797],[26.36659,127.7359],[26.37153,127.7335],[26.37473,127.73133],[26.38025,127.73013],
+  [26.38189,127.72903],[26.38272,127.72728],[26.38403,127.72764],[26.38494,127.72594],[26.38704,127.72557],
+  [26.38815,127.724],[26.39062,127.72331],[26.39736,127.71962],[26.40189,127.71649],[26.40378,127.71594],
+  [26.40617,127.71621],[26.40925,127.7152],[26.41131,127.71349],[26.41283,127.71497],[26.4146,127.71386],
+  [26.41711,127.71354],[26.42225,127.71428],[26.42501,127.71423],[26.42859,127.71529],[26.4304,127.71529],
+  [26.43361,127.71681],[26.43476,127.71566],[26.43822,127.71391],[26.43921,127.71193],[26.44097,127.71193],
+  [26.44089,127.71446],[26.43953,127.72096],[26.44003,127.72497],[26.43826,127.72552],[26.43521,127.72792],
+  [26.43316,127.72884],[26.42995,127.73175],[26.42501,127.73336],[26.42238,127.73626],[26.42225,127.74189],
+  [26.42057,127.74203],[26.41789,127.74447],[26.41736,127.74723],[26.41563,127.74908],[26.41522,127.75212],
+  [26.41814,127.75272],[26.42086,127.75654],[26.42032,127.75913],[26.4225,127.76447],[26.4209,127.77042],
+  [26.42077,127.77203],[26.41909,127.77461],[26.41711,127.77595],[26.41612,127.77927],[26.41699,127.78001],
+  [26.41588,127.78604]
+];
+
+/* 緯度経度 → SVG座標の射影パラメータを計算（地形も含めた範囲） */
+function lmProject(){
+  let minLa=90, maxLa=-90, minLo=180, maxLo=-180;
+  for(const [la,lo] of [...Object.values(STOP_COORDS), ...LM_LAND]){
+    if(la<minLa)minLa=la; if(la>maxLa)maxLa=la;
+    if(lo<minLo)minLo=lo; if(lo>maxLo)maxLo=lo;
+  }
+  const kx = Math.cos((minLa+maxLa)/2 * Math.PI/180);
+  const scale = (LM_W - 2*LM_PAD) / ((maxLo-minLo)*kx);
+  const H = Math.round((maxLa-minLa)*scale + 2*LM_PAD);
+  return {minLo, maxLa, kx, scale, H};
+}
+function lmXY(la, lo){
+  const g = lmGeo;
+  return [LM_PAD + (lo-g.minLo)*g.kx*g.scale, LM_PAD + (g.maxLa-la)*g.scale];
+}
+
+/* 静的レイヤー（路線・停留所・主要ラベル） */
+function lmBuildStatic(){
+  const segs = new Map();
+  const stopSet = new Set();
+  const majors = new Set();
+  for(const r of ROUTES[dayType]){
+    const col = ROUTE_COLORS[r.route] || "#888";
+    majors.add(r.dep); majors.add(r.arr);
+    for(let i=0; i<r.stops.length; i++){
+      stopSet.add(r.stops[i][0]);
+      if(i < r.stops.length-1){
+        const a=r.stops[i][0], b=r.stops[i+1][0];
+        const key = r.route + "|" + (a<b ? a+"|"+b : b+"|"+a);
+        if(!segs.has(key)) segs.set(key, [a,b,col,r.route]);
+      }
+    }
+  }
+  /* 地形（単一色シルエット） */
+  const land = `<path d="M${LM_LAND.map(([la,lo])=>{
+    const [x,y]=lmXY(la,lo); return x.toFixed(1)+" "+y.toFixed(1);
+  }).join("L")}Z" fill="#f5f2e8" stroke="#b9cfdd" stroke-width="1.5" stroke-linejoin="round"/>`;
+
+  /* 路線ごとに平行オフセットして重なり区間を分離表示（路線別グループ化） */
+  const OFFSETS = {"北ルート":-2.2, "西ルート":0, "南ルート":2.2, "休日南北ルート":0};
+  const linesByRoute = {};
+  for(const [a,b,col,route] of segs.values()){
+    const ca=STOP_COORDS[a], cb=STOP_COORDS[b];
+    if(!ca||!cb) continue;
+    let [x1,y1]=lmXY(ca[0],ca[1]), [x2,y2]=lmXY(cb[0],cb[1]);
+    const off = OFFSETS[route] || 0;
+    if(off){
+      const dx=x2-x1, dy=y2-y1, len=Math.hypot(dx,dy)||1;
+      const ox=-dy/len*off, oy=dx/len*off;   // 垂直方向にずらす
+      x1+=ox; y1+=oy; x2+=ox; y2+=oy;
+    }
+    linesByRoute[route] = (linesByRoute[route]||"") +
+      `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>`;
+  }
+  const lines = Object.entries(linesByRoute)
+    .map(([rt,s])=>`<g data-route="${rt}">${s}</g>`).join("");
+  let dots = "", stopLabels = "";
+  for(const sn of stopSet){
+    const c = STOP_COORDS[sn];
+    if(!c) continue;
+    const [x,y]=lmXY(c[0],c[1]);
+    dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="#fff" stroke="#8a94a3" stroke-width="1.3"/>`;
+    if(!majors.has(sn)){
+      stopLabels += `<text x="${(x+5).toFixed(1)}" y="${(y+1).toFixed(1)}" dominant-baseline="middle">${sn}</text>`;
+    }
+  }
+  let mj = "", mjLabels = "";
+  for(const sn of majors){
+    const c = STOP_COORDS[sn];
+    if(!c) continue;
+    const [x,y]=lmXY(c[0],c[1]);
+    mj += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5" fill="#2a6cb5" stroke="#fff" stroke-width="1.5"/>`;
+    mjLabels += `<text x="${x.toFixed(1)}" y="${(y-9).toFixed(1)}" text-anchor="middle">${sn}</text>`;
+  }
+  document.getElementById("lm-static").innerHTML =
+    land + `<g id="lm-routelines">${lines}</g><g>${dots}</g>${mj}`
+    + `<g id="lm-stoplabels" font-family="'Noto Sans JP',sans-serif" fill="#445" stroke="#f5f2e8" paint-order="stroke" pointer-events="none" style="display:none">${stopLabels}</g>`
+    + `<g id="lm-majorlabels" font-family="'Noto Sans JP',sans-serif" font-weight="700" fill="#334" stroke="#f5f2e8" paint-order="stroke" pointer-events="none">${mjLabels}</g>`;
+}
+
+/* 現在時刻から運行中バスの推定位置を算出 */
+function lmBusPositions(){
+  const n = new Date();
+  const now = n.getHours()*3600 + n.getMinutes()*60 + n.getSeconds();
+  const out = [];
+  for(const r of ROUTES[dayType]){
+    const st = r.stops;
+    if(st.length < 2) continue;
+    if(now < t2m(st[0][1])*60 || now > t2m(st[st.length-1][1])*60) continue;
+    for(let i=0; i<st.length-1; i++){
+      const ta = t2m(st[i][1])*60, tb = t2m(st[i+1][1])*60;
+      if(now >= ta && now <= tb){
+        const f = tb>ta ? (now-ta)/(tb-ta) : 0;
+        const a = STOP_COORDS[st[i][0]], b = STOP_COORDS[st[i+1][0]];
+        if(!a||!b) break;
+        out.push({
+          r,
+          la: a[0]+(b[0]-a[0])*f,
+          lo: a[1]+(b[1]-a[1])*f,
+          from: a, to: b,        // 進行方向の算出用
+          nextName: st[i+1][0],
+          nextTime: st[i+1][1],
+          secsToNext: tb - now
+        });
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+/* 定期更新 */
+function lmTick(){
+  const n = new Date();
+  document.getElementById("lm-clock").textContent =
+    `${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}:${String(n.getSeconds()).padStart(2,"0")}`;
+
+  const buses = lmBusPositions();
+  document.getElementById("lm-empty").style.display = buses.length ? "none" : "flex";
+
+  /* 鳳バス デフォルメイラスト（アイコン全体をscaleするので線幅も比例維持） */
+  const bk = 1/Math.sqrt(lmScale);   // 拡大時にアイコンが大きくなりすぎないよう調整
+  document.getElementById("lm-buses").innerHTML = buses.map(b=>{
+    const [x,y] = lmXY(b.la, b.lo);
+    const col = ROUTE_COLORS[b.r.route] || "#888";
+    const sel = b.r.id === lmSelBus;
+    const dim = lmSelRoute && b.r.route !== lmSelRoute;
+    /* 進行方向（画面座標での角度） */
+    const [fx,fy] = lmXY(b.from[0], b.from[1]);
+    const [tx,ty] = lmXY(b.to[0], b.to[1]);
+    const ang = Math.atan2(ty-fy, tx-fx) * 180/Math.PI;
+    const flip = (tx-fx) > 0 ? -1 : 1;   // 右方向へ進む便は車体を反転（前面を進行方向へ）
+    return `<g class="lm-bus" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${bk.toFixed(3)})" opacity="${dim?0.25:1}" onclick="lmSelectBus('${b.r.id}')">
+      ${sel ? `<rect x="-24" y="-18" width="48" height="36" rx="9" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="4,3"/>` : ""}
+      <g transform="rotate(${ang.toFixed(1)})">
+        <path d="M33 0 L22 -7 L22 7 Z" fill="${col}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/>
+      </g>
+      <g transform="scale(${flip},1)">
+        <ellipse cx="0" cy="12" rx="17" ry="2.5" fill="#000" opacity="0.12"/>
+        <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#c96e97" stroke-width="1.2"/>
+        <path d="M17.4 9.5 C10 8 7.5 1 13 -3.5 L17.4 -3.5 Z" fill="#2a6cb5" opacity="0.9"/>
+        <rect x="-17" y="-8.5" width="6.5" height="11" rx="2" fill="#233240"/>
+        <rect x="-8.5" y="-8.5" width="7.5" height="17.5" rx="1.5" fill="#233240"/>
+        <rect x="1" y="-8.5" width="13.5" height="8.5" rx="1.5" fill="#233240"/>
+        <rect x="2.5" y="2.5" width="9" height="4.5" rx="1.5" fill="#fff" stroke="#e8528a" stroke-width="0.8"/>
+        <circle cx="-10.5" cy="10" r="4" fill="#222"/><circle cx="-10.5" cy="10" r="1.7" fill="#aaa"/>
+        <circle cx="10.5" cy="10" r="4" fill="#222"/><circle cx="10.5" cy="10" r="1.7" fill="#aaa"/>
+      </g>
+    </g>`;
+  }).join("");
+
+  const info = document.getElementById("lm-businfo");
+  const selB = buses.find(b=>b.r.id===lmSelBus);
+  if(selB){
+    const mins = Math.max(1, Math.ceil(selB.secsToNext/60));
+    const col = ROUTE_COLORS[selB.r.route] || "#888";
+    info.innerHTML = `<span class="lm-bi-label" style="color:${col}">● ${selB.r.label}</span>　次は <span class="lm-bi-next">${selB.nextName}</span> ${selB.nextTime} 着予定（あと約${mins}分）`;
+    info.classList.add("show");
+  } else {
+    lmSelBus = null;
+    info.classList.remove("show");
+    info.innerHTML = "";
+  }
+}
+
+function lmSelectBus(id){
+  lmSelBus = (lmSelBus === id) ? null : id;
+  lmTick();
+}
+
+/* ── 路線凡例・強調表示 ── */
+let lmSelRoute = null;
+function lmBuildLegend(){
+  const el = document.getElementById("lm-legend");
+  if(!el) return;
+  const routes = [...new Set(ROUTES[dayType].map(r=>r.route))];
+  el.innerHTML = routes.map(rt=>{
+    const col = ROUTE_COLORS[rt] || "#888";
+    const act = lmSelRoute === rt;
+    return `<button class="lm-legend-btn${act?" active":""}" style="${act?`border-color:${col}`:""}" onclick="lmToggleRoute('${rt}')">
+      <span class="lm-legend-dot" style="background:${col}"></span>${rt}</button>`;
+  }).join("");
+}
+function lmToggleRoute(rt){
+  lmSelRoute = (lmSelRoute === rt) ? null : rt;
+  lmBuildLegend();
+  lmUpdateRouteDim();
+  lmTick();
+  if(lmSelRoute && typeof gtag !== 'undefined'){
+    gtag('event', 'live_map_route_filter', {'event_category':'ライブマップ', 'event_label': rt});
+  }
+}
+function lmUpdateRouteDim(){
+  document.querySelectorAll("#lm-routelines g[data-route]").forEach(g=>{
+    const on = !lmSelRoute || g.getAttribute("data-route") === lmSelRoute;
+    g.setAttribute("opacity", on ? "1" : "0.12");
+  });
+}
+
+/* ズーム・パン・ピンチ */
+function lmClampPan(){
+  /* マップ(viewBox範囲)が画面から出ないよう移動量を制限 */
+  if(!lmGeo) return;
+  const minX = LM_W*(1-lmScale), minY = lmGeo.H*(1-lmScale);
+  lmTx = Math.min(0, Math.max(minX, lmTx));
+  lmTy = Math.min(0, Math.max(minY, lmTy));
+}
+function lmApply(){
+  lmClampPan();
+  document.getElementById("lm-viewport").setAttribute("transform",
+    `translate(${lmTx} ${lmTy}) scale(${lmScale})`);
+  /* 拡大率に応じたバス停名表示（1.8倍以上で全停留所名） */
+  const sl = document.getElementById("lm-stoplabels");
+  if(sl){
+    sl.style.display = lmScale >= 1.8 ? "" : "none";
+    sl.setAttribute("font-size", (13/lmScale).toFixed(2));
+    sl.setAttribute("stroke-width", (3.5/lmScale).toFixed(2));
+  }
+  const ml = document.getElementById("lm-majorlabels");
+  if(ml){
+    ml.setAttribute("font-size", (13/lmScale).toFixed(2));
+    ml.setAttribute("stroke-width", (3.5/lmScale).toFixed(2));
+  }
+  lmDrawUser();
+}
+function lmClamp(v){ return Math.min(8, Math.max(1, v)); }  // 縮小は「全体」表示(等倍)まで
+function lmZoomAt(f, cx, cy){
+  const ns = lmClamp(lmScale*f);
+  const g = ns / lmScale;               // 実効倍率（clamp考慮）
+  lmTx = cx - g*(cx - lmTx);
+  lmTy = cy - g*(cy - lmTy);
+  lmScale = ns;
+  lmApply();
+  if(lmTimer !== null) lmTick();        // バスアイコンのサイズも即時更新
+}
+function lmZoom(f){ lmZoomAt(f, LM_W/2, lmGeo.H/2); }
+function lmResetView(){ lmScale=1; lmTx=0; lmTy=0; lmApply(); }
+
+/* クライアント座標 → viewBox座標（レターボックス考慮） */
+function lmClientToView(cx, cy){
+  const svg = document.getElementById("lm-svg");
+  const rect = svg.getBoundingClientRect();
+  const s = Math.min(rect.width/LM_W, rect.height/lmGeo.H);
+  const ox = (rect.width - LM_W*s)/2, oy = (rect.height - lmGeo.H*s)/2;
+  return [(cx-rect.left-ox)/s, (cy-rect.top-oy)/s, 1/s];
+}
+
+const lmPtrs = new Map();
+let lmDrag = null, lmPinch = null;
+function lmInitPan(){
+  const svg = document.getElementById("lm-svg");
+  svg.addEventListener("pointerdown", e=>{
+    svg.setPointerCapture(e.pointerId);
+    lmPtrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if(lmPtrs.size === 1){
+      lmDrag = {x:e.clientX, y:e.clientY, tx:lmTx, ty:lmTy};
+      lmPinch = null;
+    } else if(lmPtrs.size === 2){
+      const [p1,p2] = [...lmPtrs.values()];
+      lmDrag = null;
+      lmPinch = {
+        d: Math.hypot(p1.x-p2.x, p1.y-p2.y) || 1,
+        mx:(p1.x+p2.x)/2, my:(p1.y+p2.y)/2,
+        scale: lmScale, tx: lmTx, ty: lmTy
+      };
+    }
+  });
+  svg.addEventListener("pointermove", e=>{
+    if(!lmPtrs.has(e.pointerId)) return;
+    lmPtrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if(lmPinch && lmPtrs.size >= 2){
+      /* ピンチイン・アウト */
+      const [p1,p2] = [...lmPtrs.values()];
+      const d  = Math.hypot(p1.x-p2.x, p1.y-p2.y) || 1;
+      const mx = (p1.x+p2.x)/2, my = (p1.y+p2.y)/2;
+      const ns = lmClamp(lmPinch.scale * d/lmPinch.d);
+      const g  = ns/lmPinch.scale;
+      const [vx,vy,k] = lmClientToView(lmPinch.mx, lmPinch.my);
+      lmScale = ns;
+      lmTx = vx - g*(vx - lmPinch.tx) + (mx-lmPinch.mx)*k;
+      lmTy = vy - g*(vy - lmPinch.ty) + (my-lmPinch.my)*k;
+      lmApply();
+    } else if(lmDrag){
+      const k = lmClientToView(0,0)[2];
+      lmTx = lmDrag.tx + (e.clientX-lmDrag.x)*k;
+      lmTy = lmDrag.ty + (e.clientY-lmDrag.y)*k;
+      lmApply();
+    }
+  });
+  const lmEnd = e=>{
+    lmPtrs.delete(e.pointerId);
+    if(lmPtrs.size < 2) lmPinch = null;
+    if(lmPtrs.size === 1){
+      const p = [...lmPtrs.values()][0];
+      lmDrag = {x:p.x, y:p.y, tx:lmTx, ty:lmTy};
+    } else if(lmPtrs.size === 0){
+      lmDrag = null;
+      if(lmTimer !== null) lmTick();   // ピンチ後にバスアイコンのサイズを更新
+    }
+  };
+  svg.addEventListener("pointerup", lmEnd);
+  svg.addEventListener("pointercancel", lmEnd);
+  /* PC: マウスホイールでズーム */
+  svg.addEventListener("wheel", e=>{
+    e.preventDefault();
+    const [vx,vy] = lmClientToView(e.clientX, e.clientY);
+    lmZoomAt(e.deltaY < 0 ? 1.15 : 0.87, vx, vy);
+  }, {passive:false});
+}
+
+/* ── 現在地表示 ── */
+let lmUserPos = null, lmWatchId = null;
+function lmLocate(){
+  if(!navigator.geolocation){ alert("このブラウザは位置情報に対応していません"); return; }
+  if(typeof gtag !== 'undefined') gtag('event','gps_use',{'event_category':'ライブマップ'});
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      lmUserPos = {la:pos.coords.latitude, lo:pos.coords.longitude};
+      const [x,y] = lmXY(lmUserPos.la, lmUserPos.lo);
+      if(x < -60 || x > LM_W+60 || y < -60 || y > lmGeo.H+60){
+        lmUserPos = null; lmDrawUser();
+        alert("現在地はマップの範囲外です");
+        return;
+      }
+      /* 現在地を中心に表示 */
+      if(lmScale < 2) lmScale = 2;
+      lmTx = LM_W/2 - lmScale*x;
+      lmTy = lmGeo.H/2 - lmScale*y;
+      lmApply();
+      /* マップを開いている間は位置を追従 */
+      if(lmWatchId === null){
+        lmWatchId = navigator.geolocation.watchPosition(
+          p=>{ lmUserPos = {la:p.coords.latitude, lo:p.coords.longitude}; lmDrawUser(); },
+          ()=>{}, {enableHighAccuracy:true, maximumAge:10000});
+      }
+    },
+    ()=>{ alert("位置情報を取得できませんでした。\nブラウザの位置情報の許可をご確認ください。"); },
+    {enableHighAccuracy:true, timeout:8000, maximumAge:30000}
+  );
+}
+function lmDrawUser(){
+  const g = document.getElementById("lm-user");
+  if(!g) return;
+  if(!lmUserPos || !lmGeo){ g.innerHTML = ""; return; }
+  const [x,y] = lmXY(lmUserPos.la, lmUserPos.lo);
+  const k = 1/lmScale;   // 常に一定の画面サイズ（赤ピン・約32px）
+  g.innerHTML =
+    `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${k.toFixed(3)})" pointer-events="none">
+      <circle cx="0" cy="0" r="17" fill="#d93025" opacity="0.13"/>
+      <path d="M0 2 C-8 -8 -12 -13 -12 -19 A12 12 0 1 1 12 -19 C12 -13 8 -8 0 2 Z" fill="#d93025" stroke="#fff" stroke-width="2"/>
+      <circle cx="0" cy="-18" r="4.5" fill="#fff"/>
+    </g>`;
+}
+
+function openLiveMap(){
+  lmGeo = lmProject();
+  document.getElementById("lm-svg").setAttribute("viewBox", `0 0 ${LM_W} ${lmGeo.H}`);
+  document.getElementById("lm-daylabel").textContent = dayType==="weekday" ? "平日ダイヤ" : "土日祝ダイヤ";
+  lmBuildStatic();
+  lmResetView();
+  lmSelBus = null;
+  lmSelRoute = null;
+  lmBuildLegend();
+  lmUpdateRouteDim();
+  document.getElementById("livemap-overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+  lmTick();
+  lmTimer = setInterval(lmTick, 2000);
+  if(typeof gtag !== 'undefined'){
+    gtag('event', 'live_map_open', {'event_category': 'ライブマップ'});
+  }
+}
+function closeLiveMap(){
+  clearInterval(lmTimer); lmTimer = null;
+  if(lmWatchId !== null){ navigator.geolocation.clearWatch(lmWatchId); lmWatchId = null; }
+  lmUserPos = null;
+  document.getElementById("livemap-overlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+lmInitPan();
 
 /* ── 初期化 ── */
 const dt = autoDay();
