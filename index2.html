@@ -625,11 +625,15 @@ body {
   box-shadow:0 1px 5px rgba(0,0,0,.18); font-family:inherit;
 }
 .lm-empty{
-  position:absolute; inset:0; display:flex; flex-direction:column; gap:6px;
-  align-items:center; justify-content:center; text-align:center;
-  color:#8a94a3; font-size:13.5px; font-weight:500; pointer-events:none;
+  position:absolute; inset:0; display:flex;
+  align-items:center; justify-content:center; pointer-events:none;
 }
-.lm-empty .lm-empty-icon{ font-size:34px; }
+.lm-empty-card{
+  display:flex; flex-direction:column; gap:6px; align-items:center;
+  background:rgba(255,255,255,.95); border-radius:14px; padding:18px 22px;
+  color:#8a94a3; font-size:13.5px; font-weight:600; text-align:center;
+  box-shadow:0 2px 10px rgba(0,0,0,.12);
+}
 .lm-businfo{
   flex-shrink:0; background:#fff; border-top:1px solid #e2e8f0;
   padding:10px 14px; font-size:13px; color:#333; display:none;
@@ -645,6 +649,19 @@ body {
   padding-bottom:calc(10px + env(safe-area-inset-bottom));
 }
 .lm-bus{ cursor:pointer; }
+.lm-legend{
+  position:absolute; left:8px; top:8px; display:flex; flex-direction:column; gap:5px;
+}
+.lm-legend-btn{
+  display:flex; align-items:center; gap:6px; padding:5px 10px 5px 7px;
+  border:2px solid transparent; border-radius:16px; background:rgba(255,255,255,.92);
+  font-family:inherit; font-size:11.5px; font-weight:600; color:#444;
+  cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.15); text-align:left;
+}
+.lm-legend-btn.active{ background:#fff; color:#222; }
+.lm-legend-dot{
+  width:11px; height:11px; border-radius:50%; flex-shrink:0;
+}
 </style>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-JCJN77EC4R"></script>
@@ -791,7 +808,8 @@ body {
   <div class="footer">
     時刻表：令和2年5月15日改定版<br>
     お問い合わせ：読谷村役場 生活環境課 <a href="tel:0989829214">098-982-9214</a><br>
-    沖縄バス 読谷出張所 <a href="tel:0989582015">098-958-2015</a>
+    沖縄バス 読谷出張所 <a href="tel:0989582015">098-958-2015</a><br>
+    地図の行政界：国土交通省「国土数値情報（行政区域データ）」を加工して作成
   </div>
 </div>
 
@@ -811,6 +829,7 @@ body {
         <g id="lm-user"></g>
       </g>
     </svg>
+    <div class="lm-legend" id="lm-legend"></div>
     <div class="lm-zoom">
       <button onclick="lmZoom(1.4)" aria-label="拡大">＋</button>
       <button onclick="lmZoom(0.714)" aria-label="縮小">－</button>
@@ -818,8 +837,15 @@ body {
       <button onclick="lmLocate()" aria-label="現在地" style="font-size:15px">📍</button>
     </div>
     <div class="lm-empty" id="lm-empty" style="display:none">
-      <div class="lm-empty-icon">🚏</div>
-      現在運行中のバスはありません
+      <div class="lm-empty-card">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#8a94a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="16" height="13" rx="2.5"/>
+          <line x1="4" y1="10" x2="20" y2="10"/>
+          <circle cx="8.5" cy="17" r="1.8" fill="#8a94a3"/>
+          <circle cx="15.5" cy="17" r="1.8" fill="#8a94a3"/>
+        </svg>
+        <div>現在運行中のバスはありません</div>
+      </div>
     </div>
   </div>
   <div class="lm-businfo" id="lm-businfo"></div>
@@ -1594,21 +1620,27 @@ const LM_W = 480, LM_PAD = 24;
 let lmGeo = null, lmTimer = null, lmSelBus = null;
 let lmScale = 1, lmTx = 0, lmTy = 0;
 
-/* 読谷村のシルエット（村地図からトレース・時計回り・残波岬先端から）
-   ※渡慶次小学校「文」・読谷村役場「○」の地図記号を基準に座標変換 */
+/* 読谷村の行政境界（出典: 国土交通省 国土数値情報「行政区域データ」を
+   スマートニュース メディア研究所が簡素化加工したものを使用） */
 const LM_LAND = [
-  [26.4438,127.7096],[26.4421,127.7134],[26.4396,127.7172],[26.4361,127.7212],[26.4328,127.7239],[26.4298,127.7264],
-  [26.4271,127.7289],[26.4256,127.7308],[26.4252,127.7335],[26.4237,127.7366],[26.4219,127.7398],[26.4203,127.7429],
-  [26.4191,127.746],[26.4183,127.7491],[26.4182,127.7516],[26.4194,127.7545],[26.4212,127.7577],[26.4227,127.761],
-  [26.4236,127.7645],[26.4235,127.7682],[26.422,127.7718],[26.4193,127.7752],[26.4176,127.778],[26.4152,127.7818],
-  [26.4124,127.7844],[26.409,127.7861],[26.4049,127.7869],[26.4019,127.7853],[26.4009,127.783],[26.4004,127.7777],
-  [26.4002,127.776],[26.3976,127.7751],[26.394,127.7741],[26.3902,127.7728],[26.385,127.7721],[26.379,127.7718],
-  [26.3746,127.771],[26.3708,127.7699],[26.3691,127.7664],[26.3677,127.7621],[26.3671,127.7579],[26.3659,127.7543],
-  [26.3642,127.7512],[26.3645,127.7489],[26.3622,127.7466],[26.3604,127.7443],[26.3586,127.742],[26.3569,127.7383],
-  [26.3626,127.7354],[26.3659,127.7329],[26.3694,127.7307],[26.3729,127.7284],[26.3768,127.7265],[26.3811,127.724],
-  [26.3849,127.7223],[26.3882,127.7219],[26.3912,127.7203],[26.3953,127.7183],[26.3994,127.7166],[26.4045,127.7141],
-  [26.4083,127.7134],[26.4121,127.7108],[26.4188,127.7107],[26.424,127.7107],[26.4301,127.7126],[26.4336,127.7136],
-  [26.4367,127.7128],[26.4405,127.7114]
+  [26.41588,127.78604],[26.41407,127.78503],[26.41053,127.78429],[26.40798,127.78512],[26.40572,127.78549],
+  [26.40395,127.78471],[26.40473,127.78222],[26.4014,127.78111],[26.39633,127.77752],[26.39633,127.7759],
+  [26.39107,127.77305],[26.38663,127.77259],[26.38514,127.77148],[26.38309,127.77185],[26.37947,127.7689],
+  [26.37494,127.76904],[26.37284,127.76807],[26.37153,127.76908],[26.36926,127.76765],[26.37004,127.76457],
+  [26.36799,127.76369],[26.36869,127.7612],[26.36774,127.75701],[26.36807,127.75502],[26.36577,127.75106],
+  [26.36416,127.74926],[26.36338,127.74627],[26.36128,127.7465],[26.36276,127.74189],[26.36186,127.73834],
+  [26.36416,127.73797],[26.36659,127.7359],[26.37153,127.7335],[26.37473,127.73133],[26.38025,127.73013],
+  [26.38189,127.72903],[26.38272,127.72728],[26.38403,127.72764],[26.38494,127.72594],[26.38704,127.72557],
+  [26.38815,127.724],[26.39062,127.72331],[26.39736,127.71962],[26.40189,127.71649],[26.40378,127.71594],
+  [26.40617,127.71621],[26.40925,127.7152],[26.41131,127.71349],[26.41283,127.71497],[26.4146,127.71386],
+  [26.41711,127.71354],[26.42225,127.71428],[26.42501,127.71423],[26.42859,127.71529],[26.4304,127.71529],
+  [26.43361,127.71681],[26.43476,127.71566],[26.43822,127.71391],[26.43921,127.71193],[26.44097,127.71193],
+  [26.44089,127.71446],[26.43953,127.72096],[26.44003,127.72497],[26.43826,127.72552],[26.43521,127.72792],
+  [26.43316,127.72884],[26.42995,127.73175],[26.42501,127.73336],[26.42238,127.73626],[26.42225,127.74189],
+  [26.42057,127.74203],[26.41789,127.74447],[26.41736,127.74723],[26.41563,127.74908],[26.41522,127.75212],
+  [26.41814,127.75272],[26.42086,127.75654],[26.42032,127.75913],[26.4225,127.76447],[26.4209,127.77042],
+  [26.42077,127.77203],[26.41909,127.77461],[26.41711,127.77595],[26.41612,127.77927],[26.41699,127.78001],
+  [26.41588,127.78604]
 ];
 
 /* 緯度経度 → SVG座標の射影パラメータを計算（地形も含めた範囲） */
@@ -1650,9 +1682,9 @@ function lmBuildStatic(){
     const [x,y]=lmXY(la,lo); return x.toFixed(1)+" "+y.toFixed(1);
   }).join("L")}Z" fill="#f5f2e8" stroke="#b9cfdd" stroke-width="1.5" stroke-linejoin="round"/>`;
 
-  /* 路線ごとに平行オフセットして重なり区間を分離表示 */
+  /* 路線ごとに平行オフセットして重なり区間を分離表示（路線別グループ化） */
   const OFFSETS = {"北ルート":-2.2, "西ルート":0, "南ルート":2.2, "休日南北ルート":0};
-  let lines = "";
+  const linesByRoute = {};
   for(const [a,b,col,route] of segs.values()){
     const ca=STOP_COORDS[a], cb=STOP_COORDS[b];
     if(!ca||!cb) continue;
@@ -1663,8 +1695,11 @@ function lmBuildStatic(){
       const ox=-dy/len*off, oy=dx/len*off;   // 垂直方向にずらす
       x1+=ox; y1+=oy; x2+=ox; y2+=oy;
     }
-    lines += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>`;
+    linesByRoute[route] = (linesByRoute[route]||"") +
+      `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>`;
   }
+  const lines = Object.entries(linesByRoute)
+    .map(([rt,s])=>`<g data-route="${rt}">${s}</g>`).join("");
   let dots = "", stopLabels = "";
   for(const sn of stopSet){
     const c = STOP_COORDS[sn];
@@ -1684,7 +1719,7 @@ function lmBuildStatic(){
     mjLabels += `<text x="${x.toFixed(1)}" y="${(y-9).toFixed(1)}" text-anchor="middle">${sn}</text>`;
   }
   document.getElementById("lm-static").innerHTML =
-    land + `<g>${lines}</g><g>${dots}</g>${mj}`
+    land + `<g id="lm-routelines">${lines}</g><g>${dots}</g>${mj}`
     + `<g id="lm-stoplabels" font-family="'Noto Sans JP',sans-serif" fill="#445" stroke="#f5f2e8" paint-order="stroke" pointer-events="none" style="display:none">${stopLabels}</g>`
     + `<g id="lm-majorlabels" font-family="'Noto Sans JP',sans-serif" font-weight="700" fill="#334" stroke="#f5f2e8" paint-order="stroke" pointer-events="none">${mjLabels}</g>`;
 }
@@ -1708,6 +1743,7 @@ function lmBusPositions(){
           r,
           la: a[0]+(b[0]-a[0])*f,
           lo: a[1]+(b[1]-a[1])*f,
+          from: a, to: b,        // 進行方向の算出用
           nextName: st[i+1][0],
           nextTime: st[i+1][1],
           secsToNext: tb - now
@@ -1734,18 +1770,28 @@ function lmTick(){
     const [x,y] = lmXY(b.la, b.lo);
     const col = ROUTE_COLORS[b.r.route] || "#888";
     const sel = b.r.id === lmSelBus;
-    return `<g class="lm-bus" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${bk.toFixed(3)})" onclick="lmSelectBus('${b.r.id}')">
+    const dim = lmSelRoute && b.r.route !== lmSelRoute;
+    /* 進行方向（画面座標での角度） */
+    const [fx,fy] = lmXY(b.from[0], b.from[1]);
+    const [tx,ty] = lmXY(b.to[0], b.to[1]);
+    const ang = Math.atan2(ty-fy, tx-fx) * 180/Math.PI;
+    const flip = (tx-fx) > 0 ? -1 : 1;   // 右方向へ進む便は車体を反転（前面を進行方向へ）
+    return `<g class="lm-bus" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${bk.toFixed(3)})" opacity="${dim?0.25:1}" onclick="lmSelectBus('${b.r.id}')">
       ${sel ? `<rect x="-24" y="-18" width="48" height="36" rx="9" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="4,3"/>` : ""}
-      <ellipse cx="0" cy="12" rx="17" ry="2.5" fill="#000" opacity="0.12"/>
-      <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#c96e97" stroke-width="1.2"/>
-      <path d="M17.4 9.5 C10 8 7.5 1 13 -3.5 L17.4 -3.5 Z" fill="#2a6cb5" opacity="0.9"/>
-      <rect x="-17" y="-8.5" width="6.5" height="11" rx="2" fill="#233240"/>
-      <rect x="-8.5" y="-8.5" width="7.5" height="17.5" rx="1.5" fill="#233240"/>
-      <rect x="1" y="-8.5" width="13.5" height="8.5" rx="1.5" fill="#233240"/>
-      <rect x="2.5" y="2.5" width="9" height="4.5" rx="1.5" fill="#fff" stroke="#e8528a" stroke-width="0.8"/>
-      <circle cx="-10.5" cy="10" r="4" fill="#222"/><circle cx="-10.5" cy="10" r="1.7" fill="#aaa"/>
-      <circle cx="10.5" cy="10" r="4" fill="#222"/><circle cx="10.5" cy="10" r="1.7" fill="#aaa"/>
-      <circle cx="-16" cy="-13" r="5.5" fill="${col}" stroke="#fff" stroke-width="1.5"/>
+      <g transform="rotate(${ang.toFixed(1)})">
+        <path d="M33 0 L22 -7 L22 7 Z" fill="${col}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/>
+      </g>
+      <g transform="scale(${flip},1)">
+        <ellipse cx="0" cy="12" rx="17" ry="2.5" fill="#000" opacity="0.12"/>
+        <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#c96e97" stroke-width="1.2"/>
+        <path d="M17.4 9.5 C10 8 7.5 1 13 -3.5 L17.4 -3.5 Z" fill="#2a6cb5" opacity="0.9"/>
+        <rect x="-17" y="-8.5" width="6.5" height="11" rx="2" fill="#233240"/>
+        <rect x="-8.5" y="-8.5" width="7.5" height="17.5" rx="1.5" fill="#233240"/>
+        <rect x="1" y="-8.5" width="13.5" height="8.5" rx="1.5" fill="#233240"/>
+        <rect x="2.5" y="2.5" width="9" height="4.5" rx="1.5" fill="#fff" stroke="#e8528a" stroke-width="0.8"/>
+        <circle cx="-10.5" cy="10" r="4" fill="#222"/><circle cx="-10.5" cy="10" r="1.7" fill="#aaa"/>
+        <circle cx="10.5" cy="10" r="4" fill="#222"/><circle cx="10.5" cy="10" r="1.7" fill="#aaa"/>
+      </g>
     </g>`;
   }).join("");
 
@@ -1768,8 +1814,45 @@ function lmSelectBus(id){
   lmTick();
 }
 
+/* ── 路線凡例・強調表示 ── */
+let lmSelRoute = null;
+function lmBuildLegend(){
+  const el = document.getElementById("lm-legend");
+  if(!el) return;
+  const routes = [...new Set(ROUTES[dayType].map(r=>r.route))];
+  el.innerHTML = routes.map(rt=>{
+    const col = ROUTE_COLORS[rt] || "#888";
+    const act = lmSelRoute === rt;
+    return `<button class="lm-legend-btn${act?" active":""}" style="${act?`border-color:${col}`:""}" onclick="lmToggleRoute('${rt}')">
+      <span class="lm-legend-dot" style="background:${col}"></span>${rt}</button>`;
+  }).join("");
+}
+function lmToggleRoute(rt){
+  lmSelRoute = (lmSelRoute === rt) ? null : rt;
+  lmBuildLegend();
+  lmUpdateRouteDim();
+  lmTick();
+  if(lmSelRoute && typeof gtag !== 'undefined'){
+    gtag('event', 'live_map_route_filter', {'event_category':'ライブマップ', 'event_label': rt});
+  }
+}
+function lmUpdateRouteDim(){
+  document.querySelectorAll("#lm-routelines g[data-route]").forEach(g=>{
+    const on = !lmSelRoute || g.getAttribute("data-route") === lmSelRoute;
+    g.setAttribute("opacity", on ? "1" : "0.12");
+  });
+}
+
 /* ズーム・パン・ピンチ */
+function lmClampPan(){
+  /* マップ(viewBox範囲)が画面から出ないよう移動量を制限 */
+  if(!lmGeo) return;
+  const minX = LM_W*(1-lmScale), minY = lmGeo.H*(1-lmScale);
+  lmTx = Math.min(0, Math.max(minX, lmTx));
+  lmTy = Math.min(0, Math.max(minY, lmTy));
+}
 function lmApply(){
+  lmClampPan();
   document.getElementById("lm-viewport").setAttribute("transform",
     `translate(${lmTx} ${lmTy}) scale(${lmScale})`);
   /* 拡大率に応じたバス停名表示（1.8倍以上で全停留所名） */
@@ -1786,7 +1869,7 @@ function lmApply(){
   }
   lmDrawUser();
 }
-function lmClamp(v){ return Math.min(8, Math.max(0.6, v)); }
+function lmClamp(v){ return Math.min(8, Math.max(1, v)); }  // 縮小は「全体」表示(等倍)まで
 function lmZoomAt(f, cx, cy){
   const ns = lmClamp(lmScale*f);
   const g = ns / lmScale;               // 実効倍率（clamp考慮）
@@ -1922,6 +2005,9 @@ function openLiveMap(){
   lmBuildStatic();
   lmResetView();
   lmSelBus = null;
+  lmSelRoute = null;
+  lmBuildLegend();
+  lmUpdateRouteDim();
   document.getElementById("livemap-overlay").classList.add("open");
   document.body.style.overflow = "hidden";
   lmTick();
