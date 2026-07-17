@@ -638,8 +638,11 @@ body {
 .lm-businfo .lm-bi-label{ font-weight:700; }
 .lm-businfo .lm-bi-next{ color:#e8528a; font-weight:600; }
 .lm-note{
-  flex-shrink:0; background:#fff8ec; border-top:1px solid #f3e3c3;
-  padding:8px 14px calc(8px + env(safe-area-inset-bottom)); font-size:10.5px; line-height:1.5; color:#8a6d3b;
+  flex-shrink:0; background:#fff8ec; border-bottom:1px solid #f3e3c3;
+  padding:9px 14px; font-size:12.5px; line-height:1.55; color:#8a6d3b; font-weight:500;
+}
+.lm-businfo{
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
 }
 .lm-bus{ cursor:pointer; }
 </style>
@@ -799,6 +802,7 @@ body {
     <div class="lm-clock" id="lm-clock">--:--:--</div>
     <button class="lm-close" onclick="closeLiveMap()" aria-label="閉じる">✕</button>
   </div>
+  <div class="lm-note">⚠️ 時刻表に基づく推定位置です。遅延・迂回など実際の運行状況は反映されません。停留所間は直線で表示しています。</div>
   <div class="lm-map-wrap">
     <svg id="lm-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
       <g id="lm-viewport">
@@ -819,7 +823,6 @@ body {
     </div>
   </div>
   <div class="lm-businfo" id="lm-businfo"></div>
-  <div class="lm-note">⚠️ 時刻表に基づく推定位置です。遅延・迂回など実際の運行状況は反映されません。停留所間は直線で表示しています。</div>
 </div>
 
 <script>
@@ -1591,15 +1594,21 @@ const LM_W = 480, LM_PAD = 24;
 let lmGeo = null, lmTimer = null, lmSelBus = null;
 let lmScale = 1, lmTx = 0, lmTy = 0;
 
-/* 読谷村の簡易シルエット（近似境界・時計回り）
-   残波岬→北岸→東境(恩納・沖縄市)→南境(比謝川・嘉手納)→西海岸→残波岬 */
+/* 読谷村のシルエット（村地図からトレース・時計回り・残波岬先端から）
+   ※渡慶次小学校「文」・読谷村役場「○」の地図記号を基準に座標変換 */
 const LM_LAND = [
-  [26.4413,127.7104],[26.4428,127.7168],[26.4432,127.7268],[26.4415,127.7368],
-  [26.4380,127.7452],[26.4330,127.7550],[26.4285,127.7648],[26.4210,127.7728],
-  [26.4100,127.7768],[26.3960,127.7770],[26.3830,127.7745],[26.3700,127.7690],
-  [26.3600,127.7610],[26.3552,127.7500],[26.3535,127.7395],[26.3600,127.7330],
-  [26.3660,127.7245],[26.3760,127.7218],[26.3860,127.7195],[26.3980,127.7168],
-  [26.4090,127.7140],[26.4200,127.7118],[26.4320,127.7092],[26.4390,127.7086]
+  [26.4438,127.7096],[26.4421,127.7134],[26.4396,127.7172],[26.4361,127.7212],[26.4328,127.7239],[26.4298,127.7264],
+  [26.4271,127.7289],[26.4256,127.7308],[26.4252,127.7335],[26.4237,127.7366],[26.4219,127.7398],[26.4203,127.7429],
+  [26.4191,127.746],[26.4183,127.7491],[26.4182,127.7516],[26.4194,127.7545],[26.4212,127.7577],[26.4227,127.761],
+  [26.4236,127.7645],[26.4235,127.7682],[26.422,127.7718],[26.4193,127.7752],[26.4176,127.778],[26.4152,127.7818],
+  [26.4124,127.7844],[26.409,127.7861],[26.4049,127.7869],[26.4019,127.7853],[26.4009,127.783],[26.4004,127.7777],
+  [26.4002,127.776],[26.3976,127.7751],[26.394,127.7741],[26.3902,127.7728],[26.385,127.7721],[26.379,127.7718],
+  [26.3746,127.771],[26.3708,127.7699],[26.3691,127.7664],[26.3677,127.7621],[26.3671,127.7579],[26.3659,127.7543],
+  [26.3642,127.7512],[26.3645,127.7489],[26.3622,127.7466],[26.3604,127.7443],[26.3586,127.742],[26.3569,127.7383],
+  [26.3626,127.7354],[26.3659,127.7329],[26.3694,127.7307],[26.3729,127.7284],[26.3768,127.7265],[26.3811,127.724],
+  [26.3849,127.7223],[26.3882,127.7219],[26.3912,127.7203],[26.3953,127.7183],[26.3994,127.7166],[26.4045,127.7141],
+  [26.4083,127.7134],[26.4121,127.7108],[26.4188,127.7107],[26.424,127.7107],[26.4301,127.7126],[26.4336,127.7136],
+  [26.4367,127.7128],[26.4405,127.7114]
 ];
 
 /* 緯度経度 → SVG座標の射影パラメータを計算（地形も含めた範囲） */
@@ -1719,15 +1728,24 @@ function lmTick(){
   const buses = lmBusPositions();
   document.getElementById("lm-empty").style.display = buses.length ? "none" : "flex";
 
-  const bs = 12/Math.sqrt(lmScale);   // 拡大時にアイコンが大きくなりすぎないよう調整
+  /* 鳳バス デフォルメイラスト（アイコン全体をscaleするので線幅も比例維持） */
+  const bk = 1/Math.sqrt(lmScale);   // 拡大時にアイコンが大きくなりすぎないよう調整
   document.getElementById("lm-buses").innerHTML = buses.map(b=>{
     const [x,y] = lmXY(b.la, b.lo);
     const col = ROUTE_COLORS[b.r.route] || "#888";
     const sel = b.r.id === lmSelBus;
-    return `<g class="lm-bus" onclick="lmSelectBus('${b.r.id}')">
-      ${sel ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(bs+5).toFixed(1)}" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="4,3"/>` : ""}
-      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${bs.toFixed(1)}" fill="#fff" stroke="${col}" stroke-width="2.5"/>
-      <text x="${x.toFixed(1)}" y="${(y+1).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="${(bs+1).toFixed(1)}">🚌</text>
+    return `<g class="lm-bus" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${bk.toFixed(3)})" onclick="lmSelectBus('${b.r.id}')">
+      ${sel ? `<rect x="-24" y="-18" width="48" height="36" rx="9" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="4,3"/>` : ""}
+      <ellipse cx="0" cy="12" rx="17" ry="2.5" fill="#000" opacity="0.12"/>
+      <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#c96e97" stroke-width="1.2"/>
+      <path d="M17.4 9.5 C10 8 7.5 1 13 -3.5 L17.4 -3.5 Z" fill="#2a6cb5" opacity="0.9"/>
+      <rect x="-17" y="-8.5" width="6.5" height="11" rx="2" fill="#233240"/>
+      <rect x="-8.5" y="-8.5" width="7.5" height="17.5" rx="1.5" fill="#233240"/>
+      <rect x="1" y="-8.5" width="13.5" height="8.5" rx="1.5" fill="#233240"/>
+      <rect x="2.5" y="2.5" width="9" height="4.5" rx="1.5" fill="#fff" stroke="#e8528a" stroke-width="0.8"/>
+      <circle cx="-10.5" cy="10" r="4" fill="#222"/><circle cx="-10.5" cy="10" r="1.7" fill="#aaa"/>
+      <circle cx="10.5" cy="10" r="4" fill="#222"/><circle cx="10.5" cy="10" r="1.7" fill="#aaa"/>
+      <circle cx="-16" cy="-13" r="5.5" fill="${col}" stroke="#fff" stroke-width="1.5"/>
     </g>`;
   }).join("");
 
@@ -1758,13 +1776,13 @@ function lmApply(){
   const sl = document.getElementById("lm-stoplabels");
   if(sl){
     sl.style.display = lmScale >= 1.8 ? "" : "none";
-    sl.setAttribute("font-size", (10/lmScale).toFixed(2));
-    sl.setAttribute("stroke-width", (3/lmScale).toFixed(2));
+    sl.setAttribute("font-size", (13/lmScale).toFixed(2));
+    sl.setAttribute("stroke-width", (3.5/lmScale).toFixed(2));
   }
   const ml = document.getElementById("lm-majorlabels");
   if(ml){
-    ml.setAttribute("font-size", (11/lmScale).toFixed(2));
-    ml.setAttribute("stroke-width", (3/lmScale).toFixed(2));
+    ml.setAttribute("font-size", (13/lmScale).toFixed(2));
+    ml.setAttribute("stroke-width", (3.5/lmScale).toFixed(2));
   }
   lmDrawUser();
 }
@@ -1888,10 +1906,13 @@ function lmDrawUser(){
   if(!g) return;
   if(!lmUserPos || !lmGeo){ g.innerHTML = ""; return; }
   const [x,y] = lmXY(lmUserPos.la, lmUserPos.lo);
-  const r = 7/lmScale;
+  const k = 1/lmScale;   // 常に一定の画面サイズ（赤ピン・約32px）
   g.innerHTML =
-    `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r*2.2).toFixed(2)}" fill="#2a6cb5" opacity="0.15"/>` +
-    `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" fill="#2a6cb5" stroke="#fff" stroke-width="${(2.5/lmScale).toFixed(2)}"/>`;
+    `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${k.toFixed(3)})" pointer-events="none">
+      <circle cx="0" cy="0" r="17" fill="#d93025" opacity="0.13"/>
+      <path d="M0 2 C-8 -8 -12 -13 -12 -19 A12 12 0 1 1 12 -19 C12 -13 8 -8 0 2 Z" fill="#d93025" stroke="#fff" stroke-width="2"/>
+      <circle cx="0" cy="-18" r="4.5" fill="#fff"/>
+    </g>`;
 }
 
 function openLiveMap(){
