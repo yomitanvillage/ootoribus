@@ -844,6 +844,7 @@ body {
     <svg id="lm-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
       <g id="lm-viewport">
         <g id="lm-static"></g>
+        <g id="lm-trails"></g>
         <g id="lm-buses"></g>
         <g id="lm-user"></g>
       </g>
@@ -1714,8 +1715,9 @@ function lmBuildStatic(){
       const ox=-dy/len*off, oy=dx/len*off;   // 垂直方向にずらす
       x1+=ox; y1+=oy; x2+=ox; y2+=oy;
     }
+    /* 背景の路線網はごく薄いグレー（下地）。運行中の便の軌跡はlmTickで路線色描画 */
     linesByRoute[route] = (linesByRoute[route]||"") +
-      `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>`;
+      `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#b9c3cd" stroke-width="2" stroke-linecap="round" opacity="0.5"/>`;
   }
   const lines = Object.entries(linesByRoute)
     .map(([rt,s])=>`<g data-route="${rt}">${s}</g>`).join("");
@@ -1763,6 +1765,7 @@ function lmBusPositions(){
           la: a[0]+(b[0]-a[0])*f,
           lo: a[1]+(b[1]-a[1])*f,
           from: a, to: b,        // 進行方向の算出用
+          idx: i,                // 現在の区間インデックス（軌跡の描き分け用）
           nextName: st[i+1][0],
           nextTime: st[i+1][1],
           secsToNext: tb - now
@@ -1782,7 +1785,22 @@ function lmTick(){
 
   const buses = lmBusPositions();
   document.getElementById("lm-empty").style.display = buses.length ? "none" : "flex";
-  lmUpdateRouteDim(new Set(buses.map(b=>b.r.route)));
+
+  /* 運行中の便の軌跡: 通過済み=薄い路線色 / これから通る道=濃い路線色 */
+  document.getElementById("lm-trails").innerHTML = buses.map(b=>{
+    const col = ROUTE_COLORS[b.r.route] || "#888";
+    const dim = lmSelRoute && b.r.route !== lmSelRoute;
+    const [bx,by] = lmXY(b.la, b.lo);
+    const pt = ([sn])=>{ const c=STOP_COORDS[sn]; return c ? lmXY(c[0],c[1]) : null; };
+    const past = b.r.stops.slice(0, b.idx+1).map(pt).filter(Boolean);
+    past.push([bx,by]);
+    const future = [[bx,by], ...b.r.stops.slice(b.idx+1).map(pt).filter(Boolean)];
+    const pts = a => a.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+    return `<g opacity="${dim?0.15:1}">
+      <polyline points="${pts(past)}" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
+      <polyline points="${pts(future)}" fill="none" stroke="${col}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+    </g>`;
+  }).join("");
 
   /* 鳳バス デフォルメイラスト（アイコン全体をscaleするので線幅も比例維持） */
   const bk = 1/Math.sqrt(lmScale);   // 拡大時にアイコンが大きくなりすぎないよう調整
@@ -1854,18 +1872,6 @@ function lmToggleRoute(rt){
   if(lmSelRoute && typeof gtag !== 'undefined'){
     gtag('event', 'live_map_route_filter', {'event_category':'ライブマップ', 'event_label': rt});
   }
-}
-function lmUpdateRouteDim(activeRoutes){
-  document.querySelectorAll("#lm-routelines g[data-route]").forEach(g=>{
-    const rt = g.getAttribute("data-route");
-    let op = "1";
-    if(lmSelRoute){
-      op = rt === lmSelRoute ? "1" : "0.12";       // 凡例タップによる強調
-    } else if(activeRoutes && !activeRoutes.has(rt)){
-      op = "0.25";                                  // 現在運行していない路線は薄く
-    }
-    g.setAttribute("opacity", op);
-  });
 }
 
 /* ズーム・パン・ピンチ */
