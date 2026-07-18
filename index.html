@@ -845,6 +845,7 @@ body {
       <g id="lm-viewport">
         <g id="lm-static"></g>
         <g id="lm-trails"></g>
+        <g id="lm-stops"></g>
         <g id="lm-buses"></g>
         <g id="lm-user"></g>
       </g>
@@ -1739,8 +1740,11 @@ function lmBuildStatic(){
     mj += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5" fill="#2a6cb5" stroke="#fff" stroke-width="1.5"/>`;
     mjLabels += `<text x="${x.toFixed(1)}" y="${(y-9).toFixed(1)}" text-anchor="middle">${sn}</text>`;
   }
+  /* 地形と路線網は下層、バス停の丸とラベルは軌跡より上層に描画 */
   document.getElementById("lm-static").innerHTML =
-    land + `<g id="lm-routelines">${lines}</g><g>${dots}</g>${mj}`
+    land + `<g id="lm-routelines">${lines}</g>`;
+  document.getElementById("lm-stops").innerHTML =
+    `<g>${dots}</g>${mj}`
     + `<g id="lm-stoplabels" font-family="'Noto Sans JP',sans-serif" fill="#445" stroke="#f5f2e8" paint-order="stroke" pointer-events="none" style="display:none">${stopLabels}</g>`
     + `<g id="lm-majorlabels" font-family="'Noto Sans JP',sans-serif" font-weight="700" fill="#334" stroke="#f5f2e8" paint-order="stroke" pointer-events="none">${mjLabels}</g>`;
 }
