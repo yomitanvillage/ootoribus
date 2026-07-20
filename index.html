@@ -1880,11 +1880,16 @@ function lmToggleRoute(rt){
 
 /* ズーム・パン・ピンチ */
 function lmClampPan(){
-  /* マップ(viewBox範囲)が画面から出ないよう移動量を制限 */
+  /* マップ(viewBox範囲)が画面から大きく外れないよう移動量を制限。
+     全体表示(scale=1)では動かせないが、拡大するほど端に余裕(オーバースクロール)を持たせ、
+     隅のバス停も画面中央付近まで寄せられるようにする。 */
   if(!lmGeo) return;
-  const minX = LM_W*(1-lmScale), minY = lmGeo.H*(1-lmScale);
-  lmTx = Math.min(0, Math.max(minX, lmTx));
-  lmTy = Math.min(0, Math.max(minY, lmTy));
+  const marginX = LM_W * 0.22 * (lmScale-1);
+  const marginY = lmGeo.H * 0.22 * (lmScale-1);
+  const minX = LM_W*(1-lmScale) - marginX, maxX = marginX;
+  const minY = lmGeo.H*(1-lmScale) - marginY, maxY = marginY;
+  lmTx = Math.min(maxX, Math.max(minX, lmTx));
+  lmTy = Math.min(maxY, Math.max(minY, lmTy));
 }
 function lmApply(){
   lmClampPan();
