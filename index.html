@@ -247,6 +247,21 @@ body {
   display: flex; gap: 6px;
 }
 
+/* ── ルート改定告知 ── */
+.revamp-notice{
+  display:block; margin:0 0 14px; padding:12px 14px; border-radius:var(--radius-md);
+  background:#fff8ec; border:1px solid #f0c878; text-decoration:none;
+}
+.revamp-notice-title{
+  display:flex; align-items:center; gap:6px;
+  font-size:12.5px; font-weight:700; color:#a06a10; line-height:1.6;
+}
+.revamp-notice-sub{
+  margin-top:3px; font-size:11px; color:#a06a10; opacity:0.85;
+  display:flex; align-items:center; gap:4px;
+}
+.revamp-notice-sub .arrow{ font-size:12px; }
+
 /* ── GPS BTN ── */
 
 
@@ -765,6 +780,10 @@ body {
 </div>
 
 <div class="main">
+  <a class="revamp-notice" href="https://www.vill.yomitan.okinawa.jp/soshiki/seikatsukankyo/gyomu/doro_kotsu/7100.html" target="_blank" rel="noopener" onclick="if(typeof gtag!=='undefined')gtag('event','revamp_notice_click',{'event_category':'お知らせ'});">
+    <div class="revamp-notice-title">📢 令和8年9月1日から運行ルート・ダイヤが新しくなります</div>
+    <div class="revamp-notice-sub">詳細・新時刻表はこちら<span class="arrow">›</span></div>
+  </a>
   <button class="livemap-btn" onclick="openLiveMap()">
     <svg width="30" height="21" viewBox="-20 -13 40 29" aria-hidden="true">
       <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#fff" stroke-width="1.4"/>
@@ -816,7 +835,7 @@ body {
   </div>
 
   <div class="footer">
-    時刻表：令和2年5月15日改定版<br>
+    時刻表：令和2年5月15日改定版（令和8年9月1日より<a href="https://www.vill.yomitan.okinawa.jp/soshiki/seikatsukankyo/gyomu/doro_kotsu/7100.html" target="_blank" rel="noopener">新ルート・新ダイヤに変更予定</a>）<br>
     お問い合わせ：読谷村役場 生活環境課 <a href="tel:0989829214">098-982-9214</a><br>
     沖縄バス 読谷出張所 <a href="tel:0989582015">098-958-2015</a><br>
     地図の行政界：国土交通省「国土数値情報（行政区域データ）」を加工して作成
