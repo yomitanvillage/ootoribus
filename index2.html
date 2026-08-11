@@ -1382,7 +1382,7 @@ function renderSelectedBar(){
     return;
   }
   picker.style.display = "none";
-  bar.style.display = "";
+  bar.style.display = "block";
   const routesHere = [...new Set(ROUTES[dayType].filter(r=>r.stops.some(([n])=>n===selStop)).map(r=>r.route))];
   const chips = routesHere.map(rt=>{
     const c = ROUTE_CHIP[rt] || {bg:"#eee",fg:"#555"};
