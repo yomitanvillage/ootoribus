@@ -103,9 +103,9 @@ body {
 
 /* ── STOP SELECTOR ── */
 .section-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
-  color: var(--ink-light); text-transform: uppercase;
-  margin-bottom: 8px;
+  font-size: 16px; font-weight: 700; letter-spacing: 0.02em;
+  color: var(--ink); text-transform: uppercase;
+  margin-bottom: 10px;
 }
 
 .stop-search-wrap {
@@ -594,6 +594,33 @@ body {
 }
 .side-menu.open { left: 0; }
 
+/* ── マップメニュー（右スライド） ── */
+.map-menu {
+  position: fixed; top: 0; right: -360px; bottom: 0;
+  width: 340px; max-width: 88vw; z-index: 201;
+  background: var(--surface);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.18);
+  display: flex; flex-direction: column;
+  transition: right 0.22s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+.map-menu.open { right: 0; }
+
+.map-trip-list { display: none; padding: 4px 0 8px; background: var(--bg); }
+.map-trip-list.open { display: block; }
+.map-trip-btn {
+  width: 100%; padding: 9px 16px 9px 36px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: none; border: none; cursor: pointer;
+  font-family: inherit; text-align: left;
+  font-size: 13px; color: var(--ink-mid);
+  transition: all 0.1s;
+}
+.map-trip-btn:hover { background: var(--pink-faint); color: var(--pink-mid); }
+.map-trip-btn.open { background: var(--pink-pale); color: var(--pink-mid); font-weight: 700; }
+.map-trip-chevron { font-size: 10px; color: var(--ink-light); transition: transform 0.18s; flex-shrink: 0; }
+.map-trip-btn.open .map-trip-chevron { transform: rotate(180deg); }
+
 .menu-header {
   background: var(--pink-deep);
   padding: 16px;
@@ -681,6 +708,16 @@ body {
   width: 16px; height: 2px; background: white; border-radius: 2px;
 }
 
+/* マップボタン（ヘッダー） */
+.header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.map-open-btn {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(255,255,255,0.18); border: none;
+  color: white; cursor: pointer; font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 /* ── ライブマップ ── */
 .livemap-btn{
@@ -698,14 +735,24 @@ body {
 }
 .livemap-overlay.open{ display:flex; }
 .lm-header{
-  display:flex; align-items:center; gap:10px; padding:10px 14px;
-  background:#fff; border-bottom:1px solid #e2e8f0; flex-shrink:0;
+  display:flex; align-items:center; gap:10px; padding:0 16px; height:56px;
+  background:var(--pink-deep); flex-shrink:0;
 }
-.lm-title{ font-size:15px; font-weight:700; color:#333; flex:1; min-width:0; }
-.lm-title .lm-day{ font-size:11px; font-weight:600; color:#fff; background:#2a6cb5; border-radius:10px; padding:2px 8px; margin-left:6px; vertical-align:middle; }
-.lm-clock{ font-family:'DM Mono',monospace; font-size:15px; font-weight:500; color:#2a6cb5; }
+.lm-title{ display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+.lm-title-icon{
+  width:36px; height:36px; border-radius:50%; flex-shrink:0;
+  background: rgba(255,255,255,0.2);
+  display:flex; align-items:center; justify-content:center;
+}
+.lm-title-text{ min-width:0; }
+.lm-title-text h1{ font-size:16px; font-weight:700; color:#fff; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lm-title-text p{ font-size:10px; color:rgba(255,255,255,0.6); }
+.lm-clock{
+  background: rgba(255,255,255,0.12); border-radius:8px; padding:6px 10px;
+  font-family:'DM Mono',monospace; font-size:18px; font-weight:500; color:#fff; letter-spacing:1px;
+}
 .lm-close{
-  border:none; background:#f1f5f9; color:#555; width:32px; height:32px;
+  border:none; background:rgba(255,255,255,0.18); color:#fff; width:32px; height:32px;
   border-radius:50%; font-size:15px; cursor:pointer; flex-shrink:0;
 }
 .lm-map-wrap{ position:relative; flex:1; overflow:hidden; background:#d7e7f2; }
@@ -850,11 +897,34 @@ body {
         <p>読谷村コミュニティバス</p>
       </div>
     </div>
-    <div class="clock-box">
-      <div class="clock-time" id="clock">--:--</div>
-      <div class="clock-date" id="clock-date">---</div>
+    <div class="header-right">
+      <button class="map-open-btn" onclick="openMapMenu()" aria-label="路線マップを開く">
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+          <g transform="translate(4.56,9.36) scale(0.62)" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+            <line x1="8" y1="2" x2="8" y2="18"/>
+            <line x1="16" y1="6" x2="16" y2="22"/>
+          </g>
+          <g transform="translate(5.4,1.9) scale(0.55)">
+            <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </g>
+        </svg>
+      </button>
+      <div class="clock-box">
+        <div class="clock-time" id="clock">--:--</div>
+        <div class="clock-date" id="clock-date">---</div>
+      </div>
     </div>
   </div>
+</div>
+
+<div class="menu-overlay" id="map-menu-overlay" onclick="closeMapMenu()"></div>
+<div class="map-menu" id="map-menu">
+  <div class="menu-header">
+    <div class="menu-header-title">🗺 路線マップ</div>
+    <button class="menu-close-btn" onclick="closeMapMenu()">✕</button>
+  </div>
+  <div class="menu-body" id="map-menu-body"></div>
 </div>
 <div class="day-bar">
   <div class="day-bar-inner">
@@ -946,24 +1016,37 @@ body {
 <!-- ライブマップ -->
 <div class="livemap-overlay" id="livemap-overlay">
   <div class="lm-header">
-    <div class="lm-title"><svg width="27" height="19" viewBox="-20 -13 40 29" aria-hidden="true" style="vertical-align:-4px;margin-right:3px">
-      <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#c96e97" stroke-width="1.2"/>
-      <path d="M17.4 9.5 C10 8 7.5 1 13 -3.5 L17.4 -3.5 Z" fill="#2a6cb5" opacity="0.9"/>
-      <rect x="-17" y="-8.5" width="6.5" height="11" rx="2" fill="#233240"/>
-      <rect x="-8.5" y="-8.5" width="7.5" height="17.5" rx="1.5" fill="#233240"/>
-      <rect x="1" y="-8.5" width="13.5" height="8.5" rx="1.5" fill="#233240"/>
-      <rect x="2.5" y="2.5" width="9" height="4.5" rx="1.5" fill="#fff" stroke="#e8528a" stroke-width="0.8"/>
-      <circle cx="-10.5" cy="10" r="4" fill="#222"/><circle cx="-10.5" cy="10" r="1.7" fill="#aaa"/>
-      <circle cx="10.5" cy="10" r="4" fill="#222"/><circle cx="10.5" cy="10" r="1.7" fill="#aaa"/>
-    </svg>ライブマップ<span class="lm-day" id="lm-daylabel"></span></div>
+    <div class="lm-title">
+      <div class="lm-title-icon"><svg width="27" height="19" viewBox="-20 -13 40 29" aria-hidden="true">
+        <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#fff" stroke-width="1.2"/>
+        <path d="M17.4 9.5 C10 8 7.5 1 13 -3.5 L17.4 -3.5 Z" fill="#2a6cb5" opacity="0.9"/>
+        <rect x="-17" y="-8.5" width="6.5" height="11" rx="2" fill="#233240"/>
+        <rect x="-8.5" y="-8.5" width="7.5" height="17.5" rx="1.5" fill="#233240"/>
+        <rect x="1" y="-8.5" width="13.5" height="8.5" rx="1.5" fill="#233240"/>
+        <rect x="2.5" y="2.5" width="9" height="4.5" rx="1.5" fill="#fff" stroke="#e8528a" stroke-width="0.8"/>
+        <circle cx="-10.5" cy="10" r="4" fill="#222"/><circle cx="-10.5" cy="10" r="1.7" fill="#aaa"/>
+        <circle cx="10.5" cy="10" r="4" fill="#222"/><circle cx="10.5" cy="10" r="1.7" fill="#aaa"/>
+      </svg></div>
+      <div class="lm-title-text">
+        <h1>ライブマップ</h1>
+        <p>いまバスはどこ？</p>
+      </div>
+    </div>
     <div class="lm-clock" id="lm-clock">--:--:--</div>
     <button class="lm-close" onclick="closeLiveMap()" aria-label="閉じる">✕</button>
+  </div>
+  <div class="day-bar">
+    <div class="day-bar-inner">
+      <button class="day-btn" id="lm-btn-weekday" onclick="setDay('weekday')">平日</button>
+      <button class="day-btn" id="lm-btn-holiday" onclick="setDay('holiday')">土日・祝日</button>
+    </div>
   </div>
   <div class="lm-note">⚠️ 時刻表に基づく推定位置です。遅延・迂回など実際の運行状況は反映されません。停留所間は直線で表示しています。</div>
   <div class="lm-map-wrap">
     <svg id="lm-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
       <g id="lm-viewport">
         <g id="lm-static"></g>
+        <g id="lm-selected-trip"></g>
         <g id="lm-trails"></g>
         <g id="lm-stops"></g>
         <g id="lm-buses"></g>
@@ -1894,6 +1977,88 @@ function closeMenu(){
   document.getElementById("menu-overlay").classList.remove("open");
   document.body.style.overflow = "";
 }
+
+/* ── マップメニュー（路線・便ごとのマップ） ── */
+function getRouteTrips(dayType){
+  const map = new Map();
+  for(const r of ROUTES[dayType]){
+    if(!map.has(r.route)) map.set(r.route, []);
+    map.get(r.route).push(r);
+  }
+  return map;
+}
+
+let openMapRoutes = new Set();
+let openMapTrips = new Set();
+
+function buildMapMenu(){
+  const body = document.getElementById("map-menu-body");
+  if(!body) return;
+  const tripMap = getRouteTrips(dayType);
+
+  body.innerHTML = [...tripMap.entries()].map(([routeName, trips])=>{
+    const color = ROUTE_COLORS[routeName] || "#888";
+    const isOpen = openMapRoutes.has(routeName);
+
+    const tripItems = trips.map(r=>{
+      const tOpen = openMapTrips.has(r.id);
+      const mapSvg = tOpen ? buildMiniMap(r, null) : "";
+      return `<div>
+        <button class="map-trip-btn${tOpen?" open":""}" onclick="toggleMapTrip('${r.id}')">
+          <span>${r.label}</span>
+          <span class="map-trip-chevron">▼</span>
+        </button>
+        ${tOpen ? `<div class="route-map-wrap">
+          <div class="route-map-label">${r.dep} → ${r.arr}</div>
+          <div class="route-map-scroll">${mapSvg}</div>
+        </div>` : ""}
+      </div>`;
+    }).join("");
+
+    return `<div class="route-group">
+      <button class="route-group-btn${isOpen?" open":""}" onclick="toggleMapRouteGroup('${routeName}')">
+        <div class="route-group-name">
+          <div class="route-dot" style="background:${color}"></div>
+          ${routeName}
+          <span class="route-count">${trips.length}便</span>
+        </div>
+        <span class="route-chevron">▼</span>
+      </button>
+      <div class="map-trip-list${isOpen?" open":""}">${tripItems}</div>
+    </div>`;
+  }).join("");
+}
+
+function toggleMapRouteGroup(name){
+  if(openMapRoutes.has(name)) openMapRoutes.delete(name);
+  else openMapRoutes.add(name);
+  buildMapMenu();
+}
+
+function toggleMapTrip(id){
+  if(openMapTrips.has(id)) openMapTrips.delete(id);
+  else openMapTrips.add(id);
+  buildMapMenu();
+  if(typeof gtag !== 'undefined'){
+    gtag('event', 'route_map_open', {'event_category': 'ルートマップ', 'event_label': id});
+  }
+}
+
+function openMapMenu(){
+  buildMapMenu();
+  document.getElementById("map-menu").classList.add("open");
+  document.getElementById("map-menu-overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+  if(typeof gtag !== 'undefined'){
+    gtag('event', 'map_menu_open', {'event_category': 'ナビゲーション'});
+  }
+}
+function closeMapMenu(){
+  document.getElementById("map-menu").classList.remove("open");
+  document.getElementById("map-menu-overlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
 function selectFromMenu(name){
   closeMenu();
   selectStop(name);
@@ -1922,7 +2087,23 @@ function setDay(dt){
     });
   }
   selStop=null; cardView="cards"; openCards.clear(); openMaps.clear(); showPastCards.clear(); showMoreCards.clear(); openRoutes.clear();
+  openMapRoutes.clear(); openMapTrips.clear();
+  if(document.getElementById("map-menu").classList.contains("open")) buildMapMenu();
   renderStops(); renderStopView();
+
+  lmSyncDayButtons();
+  if(document.getElementById("livemap-overlay").classList.contains("open")){
+    lmGeo = lmProject();
+    document.getElementById("lm-svg").setAttribute("viewBox", `0 0 ${LM_W} ${lmGeo.H}`);
+    lmBuildStatic();
+    lmResetView();
+    lmSelBus = null;
+    lmSelRoutes = new Set();
+    lmApplyRouteLineVisibility();
+    lmDrawTripRoutes([]);
+    lmBuildLegend();
+    lmTick();
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1976,10 +2157,16 @@ function lmXY(la, lo){
 function lmBuildStatic(){
   const segs = new Map();
   const stopSet = new Set();
-  const majors = new Set();
+  /* 「本当の拠点」＝複数の便の発着地点になっている停留所のみ強調表示する
+     （1便だけの途中始発・途中終着の停留所を誤って拠点扱いしないため） */
+  const termCounts = new Map();
+  for(const r of ROUTES[dayType]){
+    termCounts.set(r.dep, (termCounts.get(r.dep)||0) + 1);
+    termCounts.set(r.arr, (termCounts.get(r.arr)||0) + 1);
+  }
+  const majors = new Set([...termCounts.entries()].filter(([,n])=>n>=2).map(([sn])=>sn));
   for(const r of ROUTES[dayType]){
     const col = ROUTE_COLORS[r.route] || "#888";
-    majors.add(r.dep); majors.add(r.arr);
     for(let i=0; i<r.stops.length; i++){
       stopSet.add(r.stops[i][0]);
       if(i < r.stops.length-1){
@@ -2085,7 +2272,7 @@ function lmTick(){
   /* 運行中の便の軌跡: 通過済み=薄い路線色 / これから通る道=濃い路線色 */
   document.getElementById("lm-trails").innerHTML = buses.map(b=>{
     const col = ROUTE_COLORS[b.r.route] || "#888";
-    const dim = lmSelRoute && b.r.route !== lmSelRoute;
+    const dim = lmSelRoutes.size>0 && !lmSelRoutes.has(b.r.route);
     const [bx,by] = lmXY(b.la, b.lo);
     const pt = ([sn])=>{ const c=STOP_COORDS[sn]; return c ? lmXY(c[0],c[1]) : null; };
     const past = b.r.stops.slice(0, b.idx+1).map(pt).filter(Boolean);
@@ -2104,7 +2291,7 @@ function lmTick(){
     const [x,y] = lmXY(b.la, b.lo);
     const col = ROUTE_COLORS[b.r.route] || "#888";
     const sel = b.r.id === lmSelBus;
-    const dim = lmSelRoute && b.r.route !== lmSelRoute;
+    const dim = lmSelRoutes.size>0 && !lmSelRoutes.has(b.r.route);
     /* 進行方向（画面座標での角度） */
     const [fx,fy] = lmXY(b.from[0], b.from[1]);
     const [tx,ty] = lmXY(b.to[0], b.to[1]);
@@ -2141,6 +2328,10 @@ function lmTick(){
     info.classList.remove("show");
     info.innerHTML = "";
   }
+
+  /* 選択中（ON）の路線で現在運行中の便があれば、その全ルートをマップ上に表示 */
+  const selRouteTrips = lmSelRoutes.size>0 ? buses.filter(b=>lmSelRoutes.has(b.r.route)).map(b=>b.r) : [];
+  lmDrawTripRoutes(selRouteTrips);
 }
 
 function lmSelectBus(id){
@@ -2148,8 +2339,8 @@ function lmSelectBus(id){
   lmTick();
 }
 
-/* ── 路線凡例・強調表示 ── */
-let lmSelRoute = null;
+/* ── 路線凡例・強調表示（各ルートON/OFFの複数選択） ── */
+let lmSelRoutes = new Set();
 function lmBuildLegend(buses){
   const el = document.getElementById("lm-legend");
   if(!el) return;
@@ -2157,7 +2348,7 @@ function lmBuildLegend(buses){
   const routes = [...new Set(ROUTES[dayType].map(r=>r.route))];
   el.innerHTML = routes.map(rt=>{
     const col = ROUTE_COLORS[rt] || "#888";
-    const act = lmSelRoute === rt;
+    const act = lmSelRoutes.has(rt);
     const svcNames = buses.filter(b=>b.r.route===rt).map(b=>{
       const m = b.r.label.match(/\d+便[^\s]*/);
       return m ? m[0] : b.r.label;
@@ -2167,10 +2358,44 @@ function lmBuildLegend(buses){
       <span class="lm-legend-dot" style="background:${col}"></span>${rt}${svc}</button>`;
   }).join("");
 }
+
+/* ── 選択中の路線で運行中の便のルートライン表示 ── */
+function lmDrawTripRoutes(trips){
+  const el = document.getElementById("lm-selected-trip");
+  if(!el) return;
+  if(!trips || !trips.length){ el.innerHTML = ""; return; }
+  el.innerHTML = trips.map(r=>{
+    const col = ROUTE_COLORS[r.route] || "#888";
+    const pts = r.stops.map(([sn])=>{ const c=STOP_COORDS[sn]; return c ? lmXY(c[0],c[1]) : null; }).filter(Boolean);
+    if(pts.length < 2) return "";
+    const line = pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+    const dots = pts.map(([x,y],i)=>{
+      const isEnd = i===0 || i===pts.length-1;
+      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isEnd?4.5:3}" fill="${col}" stroke="#fff" stroke-width="1.3"/>`;
+    }).join("");
+    return `<polyline points="${line}" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+      <polyline points="${line}" fill="none" stroke="${col}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dots}`;
+  }).join("");
+}
+
+/* 背景の路線マップ（静的な路線網）の表示/非表示を、選択中のルートに合わせて切り替える。
+   何も選択されていない時は全路線を表示（従来通り） */
+function lmApplyRouteLineVisibility(){
+  const groups = document.querySelectorAll("#lm-routelines > g[data-route]");
+  groups.forEach(g=>{
+    const rt = g.getAttribute("data-route");
+    const show = lmSelRoutes.size===0 || lmSelRoutes.has(rt);
+    g.style.display = show ? "" : "none";
+  });
+}
+
 function lmToggleRoute(rt){
-  lmSelRoute = (lmSelRoute === rt) ? null : rt;
+  if(lmSelRoutes.has(rt)) lmSelRoutes.delete(rt);
+  else lmSelRoutes.add(rt);
+  lmApplyRouteLineVisibility();
   lmTick();
-  if(lmSelRoute && typeof gtag !== 'undefined'){
+  if(typeof gtag !== 'undefined'){
     gtag('event', 'live_map_route_filter', {'event_category':'ライブマップ', 'event_label': rt});
   }
 }
@@ -2335,14 +2560,23 @@ function lmDrawUser(){
     </g>`;
 }
 
+function lmSyncDayButtons(){
+  const bw = document.getElementById("lm-btn-weekday");
+  const bh = document.getElementById("lm-btn-holiday");
+  if(bw) bw.classList.toggle("active", dayType==="weekday");
+  if(bh) bh.classList.toggle("active", dayType==="holiday");
+}
+
 function openLiveMap(){
   lmGeo = lmProject();
   document.getElementById("lm-svg").setAttribute("viewBox", `0 0 ${LM_W} ${lmGeo.H}`);
-  document.getElementById("lm-daylabel").textContent = dayType==="weekday" ? "平日ダイヤ" : "土日祝ダイヤ";
+  lmSyncDayButtons();
   lmBuildStatic();
   lmResetView();
   lmSelBus = null;
-  lmSelRoute = null;
+  lmSelRoutes = new Set();
+  lmApplyRouteLineVisibility();
+  lmDrawTripRoutes([]);
   lmBuildLegend();
   document.getElementById("livemap-overlay").classList.add("open");
   document.body.style.overflow = "hidden";
