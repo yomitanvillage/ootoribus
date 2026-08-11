@@ -1352,11 +1352,6 @@ function selectStop(name){
   document.getElementById("stop-search").value = "";
   renderStops();
   renderStopView();
-  // 選択中バス停バーへスクロール
-  setTimeout(()=>{
-    const el = document.getElementById("selected-stop-bar");
-    if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
-  }, 100);
 }
 
 function changeStop(){
