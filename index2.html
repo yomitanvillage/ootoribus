@@ -282,7 +282,7 @@ body {
 .approach-section { margin-bottom: 6px; }
 .approach-head {
   display: flex; align-items: center; justify-content: space-between;
-  font-size: 11px; font-weight: 700; color: var(--ink-light);
+  font-size: 12px; font-weight: 700; color: var(--ink-light);
   letter-spacing: 0.04em; margin-bottom: 8px;
 }
 .approach-refresh {
@@ -296,35 +296,35 @@ body {
 .approach-card.is-live { border-width: 2px; }
 .approach-card-head {
   display: flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 700; color: var(--ink);
+  font-size: 13px; font-weight: 700; color: var(--ink);
 }
-.at-rdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.approach-dest { margin-left: auto; font-size: 11px; font-weight: 400; color: var(--ink-light); }
-.approach-notrun { font-size: 11px; color: var(--ink-light); margin-top: 10px; }
+.at-rdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.approach-dest { margin-left: auto; font-size: 12px; font-weight: 400; color: var(--ink-light); }
+.approach-notrun { font-size: 12px; color: var(--ink-light); margin-top: 10px; }
 .approach-notrun-box {
   background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-lg);
   padding: 16px 14px; text-align: center; font-size: 12px; color: var(--ink-light); font-weight: 600;
 }
-.approach-track { position: relative; height: 22px; margin-top: 12px; }
+.approach-track { position: relative; height: 26px; margin-top: 14px; }
 .approach-track-line {
   position: absolute; left: 6%; right: 6%; top: 9px; height: 2px; background: #e3e0d8;
 }
 .approach-track-dots { display: flex; justify-content: space-between; align-items: center; height: 100%; }
 .at-dot { width: 9px; height: 9px; border-radius: 50%; background: #d8d4c8; }
 .approach-bus {
-  position: absolute; top: -2px; transform: translateX(-50%);
-  width: 20px; height: 20px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; font-size: 11px;
+  position: absolute; top: -4px; transform: translateX(-50%);
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
 }
 .approach-track-labels {
-  display: flex; justify-content: space-between; font-size: 9px; color: var(--ink-faint); margin-top: 2px;
+  display: flex; justify-content: space-between; font-size: 10px; color: var(--ink-faint); margin-top: 4px;
 }
 .approach-foot {
   display: flex; justify-content: space-between; align-items: center; margin-top: 8px;
 }
-.approach-status { font-size: 11px; color: var(--ink-mid); }
+.approach-status { font-size: 12px; color: var(--ink-mid); }
 .approach-eta {
-  font-size: 12px; font-weight: 700; color: #fff; padding: 3px 10px; border-radius: 12px;
+  font-size: 13px; font-weight: 700; color: #fff; padding: 3px 10px; border-radius: 12px;
 }
 
 /* ── 次のバス／全便時刻表 切替 ── */
@@ -346,6 +346,9 @@ body {
 .full-tt-table tr { cursor: pointer; }
 .full-tt-table tr:hover td { background: var(--pink-faint); }
 .tt-time { font-family: 'DM Mono', monospace; font-weight: 500; color: var(--ink); white-space: nowrap; }
+.full-tt-table tr.tt-next td { background: var(--amber-pale); }
+.full-tt-table tr.tt-next:hover td { background: var(--amber-pale); }
+.full-tt-table tr.tt-next .tt-time { color: #a87a12; font-weight: 700; }
 .tt-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
 .tt-dest { text-align: right; color: var(--ink-light); white-space: nowrap; }
 
@@ -398,25 +401,49 @@ body {
 .recent-name { font-size: 13px; font-weight: 500; color: var(--ink); }
 .recent-route { font-size: 10px; color: var(--ink-light); margin-top: 2px; }
 
+/* ── 現在地から近いバス停 ── */
+.stop-list.near-active {
+  background: var(--pink-faint);
+  border: 1.5px solid #f3b8d4;
+  border-radius: var(--radius-lg);
+  padding: 12px 12px 4px;
+}
+.near-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--pink-deep); text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.near-label::after {
+  content: ""; flex: 1; height: 1px; background: #f3b8d4;
+}
+
 /* ── お気に入りバス停 ── */
+#favorites-area:not(:empty) {
+  background: var(--amber-pale);
+  border: 1.5px solid #f0d78c;
+  border-radius: var(--radius-lg);
+  padding: 12px 12px 4px;
+  margin-bottom: 14px;
+}
 .fav-label {
   display: flex; align-items: center; gap: 6px;
   font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
-  color: var(--ink-light); text-transform: uppercase;
+  color: #a87a12; text-transform: uppercase;
   margin-bottom: 8px;
 }
 .fav-label::after {
-  content: ""; flex: 1; height: 1px; background: var(--border);
+  content: ""; flex: 1; height: 1px; background: #f0d78c;
 }
 .fav-item {
   display: flex; align-items: center; gap: 10px;
   padding: 9px 12px;
   background: var(--surface); border-radius: var(--radius-md);
-  border: 1.5px solid var(--border); cursor: pointer;
-  transition: all 0.12s; margin-bottom: 6px;
+  border: 1.5px solid #f0d78c; cursor: pointer;
+  transition: all 0.12s; margin-bottom: 8px;
 }
-.fav-item:hover { border-color: var(--pink-soft); background: var(--pink-faint); }
-.fav-item.active { border-color: var(--pink-mid); background: var(--pink-pale); }
+.fav-item:hover { border-color: var(--amber); background: #fffdf5; }
+.fav-item.active { border-color: var(--amber); background: #fff8e8; }
 .fav-item-name { font-size: 13px; font-weight: 500; color: var(--ink); }
 .fav-item-route { font-size: 10px; color: var(--ink-light); margin-top: 2px; }
 .fav-star-btn {
@@ -1001,10 +1028,6 @@ body {
       <input class="stop-search" type="search" placeholder="バス停名を入力（例：読谷バスターミナル）" id="stop-search" oninput="renderStops()" autocomplete="off">
     </div>
 
-    <div class="stop-list" id="stop-list"></div>
-
-    <hr class="divider">
-
     <button class="gps-btn" id="gps-btn" onclick="refreshGPS()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
@@ -1013,6 +1036,11 @@ body {
       </svg>
       現在地から近いバス停を探す
     </button>
+
+    <div class="stop-list" id="stop-list"></div>
+
+    <hr class="divider" id="picker-divider">
+
     <div id="recent-area"></div>
   </div>
 
@@ -1502,8 +1530,11 @@ function renderStops(){
         ${favStarBtn(name)}
       </div>`;
     }).join("");
+    container.classList.add("near-active");
+    container.insertAdjacentHTML("afterbegin", `<div class="near-label">現在地から近い順</div>`);
     return;
   }
+  container.classList.remove("near-active");
 
   // ── 未入力かつGPS未取得 → 検索を促す ──
   if(q.length < 1){
@@ -1728,9 +1759,13 @@ function renderTimetable(){
     return {r, time: st[1]};
   }).sort((a,b)=>t2m(a.time)-t2m(b.time));
 
-  const rows = withTime.map(({r,time})=>{
+  const now = nowM();
+  const nextIdx = withTime.findIndex(({time})=>t2m(time) >= now);
+
+  const rows = withTime.map(({r,time}, i)=>{
     const color = ROUTE_COLORS[r.route] || "#888";
-    return `<tr onclick="jumpToCard('${r.id}')">
+    const nextCls = i===nextIdx ? " tt-next" : "";
+    return `<tr class="${nextCls.trim()}" onclick="jumpToCard('${r.id}')">
       <td class="tt-time">${time}</td>
       <td><span class="tt-dot" style="background:${color}"></span>${r.label}</td>
       <td class="tt-dest">${r.arr}行</td>
