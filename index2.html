@@ -398,6 +398,42 @@ body {
 .recent-name { font-size: 13px; font-weight: 500; color: var(--ink); }
 .recent-route { font-size: 10px; color: var(--ink-light); margin-top: 2px; }
 
+/* ── お気に入りバス停 ── */
+.fav-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--ink-light); text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.fav-label::after {
+  content: ""; flex: 1; height: 1px; background: var(--border);
+}
+.fav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
+  background: var(--surface); border-radius: var(--radius-md);
+  border: 1.5px solid var(--border); cursor: pointer;
+  transition: all 0.12s; margin-bottom: 6px;
+}
+.fav-item:hover { border-color: var(--pink-soft); background: var(--pink-faint); }
+.fav-item.active { border-color: var(--pink-mid); background: var(--pink-pale); }
+.fav-item-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+.fav-item-route { font-size: 10px; color: var(--ink-light); margin-top: 2px; }
+.fav-star-btn {
+  border: none; background: transparent; cursor: pointer;
+  font-size: 17px; line-height: 1; padding: 2px 3px; flex-shrink: 0;
+  color: var(--ink-faint); font-family: inherit; transition: transform 0.1s;
+}
+.fav-star-btn.active { color: var(--amber); }
+.fav-star-btn:active { transform: scale(1.2); }
+.ssb-fav-btn {
+  border: 1.5px solid var(--border); background: var(--surface);
+  border-radius: 8px; width: 34px; height: 34px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer; color: var(--ink-faint); font-family: inherit;
+}
+.ssb-fav-btn.active { color: var(--amber); border-color: var(--amber); background: var(--amber-pale); }
+
 /* ── 通過済み折りたたみ ── */
 .past-toggle-row {
   display: flex; align-items: center; justify-content: center;
@@ -958,6 +994,8 @@ body {
   <div id="picker-area">
     <div class="section-label">バス停を検索</div>
 
+    <div id="favorites-area"></div>
+
     <div class="stop-search-wrap">
       <svg class="stop-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input class="stop-search" type="search" placeholder="バス停名を入力（例：読谷バスターミナル）" id="stop-search" oninput="renderStops()" autocomplete="off">
@@ -1323,6 +1361,7 @@ function renderRecent(){
         <div class="recent-route">${routeStr}</div>
       </div>
       ${badge}
+      ${favStarBtn(name)}
     </div>`;
   }).filter(Boolean).join("");
 
@@ -1331,11 +1370,94 @@ function renderRecent(){
     : "";
 }
 
+/* ── お気に入りバス停（localStorage、最大3件） ── */
+const FAVORITES_KEY = "otori_bus_favorites";
+const FAVORITES_MAX = 3;
+function getFavorites(){
+  try { return JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]"); }
+  catch(e){ return []; }
+}
+function isFavorite(name){
+  return getFavorites().includes(name);
+}
+function setFavorites(list){
+  try { localStorage.setItem(FAVORITES_KEY, JSON.stringify(list)); } catch(e){}
+}
+function toggleFavorite(name){
+  let list = getFavorites();
+  if(list.includes(name)){
+    list = list.filter(n=>n!==name);
+  } else {
+    if(list.length >= FAVORITES_MAX){
+      alert(`お気に入りは${FAVORITES_MAX}件まで登録できます。\n他のバス停を解除してから登録してください。`);
+      return;
+    }
+    list.push(name);
+  }
+  setFavorites(list);
+  if(typeof gtag !== 'undefined'){
+    gtag('event', 'toggle_favorite', {
+      'event_category': 'バス停',
+      'event_label': name
+    });
+  }
+  renderFavorites();
+  renderRecent();
+  renderStops();
+  renderSelectedBar();
+}
+
+/* ── お気に入り☆ボタン（一覧の行の中で使う共通パーツ） ── */
+function favStarBtn(name){
+  const fav = isFavorite(name);
+  const safe = name.replace(/'/g,"\\'");
+  return `<button class="fav-star-btn${fav?" active":""}" onclick="event.stopPropagation(); toggleFavorite('${safe}')" aria-label="${fav?"お気に入りから外す":"お気に入りに登録"}">${fav?"★":"☆"}</button>`;
+}
+
+/* ── お気に入りエリア描画 ── */
+function renderFavorites(){
+  const area = document.getElementById("favorites-area");
+  if(!area) return;
+  const q    = document.getElementById("stop-search").value.trim();
+  const list = getFavorites();
+  if(list.length === 0 || q){ area.innerHTML = ""; return; }
+
+  const now = nowM();
+  const items = list.map(name=>{
+    const routes = ROUTES[dayType].filter(r=>r.stops.some(([n])=>n===name));
+    const routeStr = [...new Set(routes.map(r=>r.route))].join("・");
+    let nextMins = null;
+    for(const r of routes){
+      const st = r.stops.find(([n])=>n===name);
+      if(st){ const diff=t2m(st[1])-now; if(diff>=0&&(nextMins===null||diff<nextMins)) nextMins=diff; }
+    }
+    const badge = nextMins===null
+      ? `<span class="stop-next-badge badge-done">本日終了</span>`
+      : nextMins<=10
+        ? `<span class="stop-next-badge badge-soon">あと${nextMins}分</span>`
+        : `<span class="stop-next-badge badge-ok">あと${nextMins}分</span>`;
+    const active = name===selStop ? " active" : "";
+    return `<div class="fav-item${active}" onclick="selectStop('${name.replace(/'/g,"\'")}')">
+      ${favStarBtn(name)}
+      <div style="flex:1;min-width:0">
+        <div class="fav-item-name">${name}</div>
+        <div class="fav-item-route">${routeStr || "本日運行なし"}</div>
+      </div>
+      ${badge}
+    </div>`;
+  }).join("");
+
+  area.innerHTML = items
+    ? `<div class="fav-label">お気に入り（${list.length}/${FAVORITES_MAX}）</div>${items}`
+    : "";
+}
+
 /* ── バス停検索リスト描画 ── */
 function renderStops(){
   const q = document.getElementById("stop-search").value.trim();
   const container = document.getElementById("stop-list");
 
+  renderFavorites();
   renderRecent();
 
   // 全停留所を収集
@@ -1377,6 +1499,7 @@ function renderStops(){
         <div class="stop-dist"><div class="dist-n">${d.n}</div><div class="dist-u">${d.u}</div></div>
         <div class="stop-name-wrap"><div class="stop-name-text">${name}</div><div class="stop-route-text">${routeStr}</div></div>
         ${badge}
+        ${favStarBtn(name)}
       </div>`;
     }).join("");
     return;
@@ -1421,6 +1544,7 @@ function renderStops(){
     return `<div class="stop-item${active}" onclick="selectStop('${name.replace(/'/g,"\'")}')">
       <div class="stop-name-wrap"><div class="stop-name-text">${name}</div><div class="stop-route-text">${routeStr}</div></div>
       ${badge}
+      ${favStarBtn(name)}
     </div>`;
   }).join("");
 }
@@ -1472,16 +1596,20 @@ function renderSelectedBar(){
     const c = ROUTE_CHIP[rt] || {bg:"#eee",fg:"#555"};
     return `<span class="chip" style="background:${c.bg};color:${c.fg}">${rt}</span>`;
   }).join("");
+  const isFav = isFavorite(selStop);
   bar.innerHTML = `<div class="selected-stop-bar">
     <div>
       <div class="ssb-label">選択中のバス停</div>
       <div class="ssb-name">${selStop}</div>
       <div class="ssb-chips">${chips}</div>
     </div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:stretch">
+    <button class="ssb-fav-btn${isFav?" active":""}" onclick="toggleFavorite('${selStop.replace(/'/g,"\'")}')" aria-label="${isFav?"お気に入りから外す":"お気に入りに登録"}">${isFav?"★":"☆"}</button>
     <button class="ssb-change-btn" onclick="changeStop()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       検索に戻る
     </button>
+    </div>
   </div>`;
 }
 
