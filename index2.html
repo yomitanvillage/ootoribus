@@ -735,8 +735,11 @@ body {
 }
 .livemap-overlay.open{ display:flex; }
 .lm-header{
-  display:flex; align-items:center; gap:10px; padding:0 16px; height:56px;
-  background:var(--pink-deep); flex-shrink:0;
+  padding:0 16px; background:var(--pink-deep); flex-shrink:0;
+}
+.lm-header-inner{
+  max-width:480px; margin:0 auto; height:56px;
+  display:flex; align-items:center; gap:10px;
 }
 .lm-title{ display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
 .lm-title-icon{
@@ -787,6 +790,7 @@ body {
   flex-shrink:0; background:#fff8ec; border-bottom:1px solid #f3e3c3;
   padding:9px 14px; font-size:12.5px; line-height:1.55; color:#8a6d3b; font-weight:500;
 }
+.lm-note-inner{ max-width:480px; margin:0 auto; }
 .lm-businfo{
   padding-bottom:calc(10px + env(safe-area-inset-bottom));
 }
@@ -1016,6 +1020,7 @@ body {
 <!-- ライブマップ -->
 <div class="livemap-overlay" id="livemap-overlay">
   <div class="lm-header">
+   <div class="lm-header-inner">
     <div class="lm-title">
       <div class="lm-title-icon"><svg width="27" height="19" viewBox="-20 -13 40 29" aria-hidden="true">
         <rect x="-18" y="-11" width="36" height="21" rx="4.5" fill="#f5aec9" stroke="#fff" stroke-width="1.2"/>
@@ -1034,6 +1039,7 @@ body {
     </div>
     <div class="lm-clock" id="lm-clock">--:--:--</div>
     <button class="lm-close" onclick="closeLiveMap()" aria-label="閉じる">✕</button>
+   </div>
   </div>
   <div class="day-bar">
     <div class="day-bar-inner">
@@ -1041,7 +1047,7 @@ body {
       <button class="day-btn" id="lm-btn-holiday" onclick="setDay('holiday')">土日・祝日</button>
     </div>
   </div>
-  <div class="lm-note">⚠️ 時刻表に基づく推定位置です。遅延・迂回など実際の運行状況は反映されません。停留所間は直線で表示しています。</div>
+  <div class="lm-note"><div class="lm-note-inner">⚠️ 時刻表に基づく推定位置です。遅延・迂回など実際の運行状況は反映されません。停留所間は直線で表示しています。</div></div>
   <div class="lm-map-wrap">
     <svg id="lm-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
       <g id="lm-viewport">
