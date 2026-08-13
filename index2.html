@@ -2499,8 +2499,8 @@ function lmTick(){
   }
 
   /* 選択中（ON）の路線で現在運行中の便があれば、その全ルートをマップ上に表示 */
-  const selRouteTrips = lmSelRoutes.size>0 ? buses.filter(b=>lmSelRoutes.has(b.r.route)).map(b=>b.r) : [];
-  lmDrawTripRoutes(selRouteTrips);
+  const selRouteBuses = lmSelRoutes.size>0 ? buses.filter(b=>lmSelRoutes.has(b.r.route)) : [];
+  lmDrawTripRoutes(selRouteBuses);
 }
 
 function lmSelectBus(id){
@@ -2528,22 +2528,32 @@ function lmBuildLegend(buses){
   }).join("");
 }
 
-/* ── 選択中の路線で運行中の便のルートライン表示 ── */
-function lmDrawTripRoutes(trips){
+/* ── 選択中の路線で運行中の便のルートライン表示（通過済み区間は薄色） ── */
+function lmDrawTripRoutes(buses){
   const el = document.getElementById("lm-selected-trip");
   if(!el) return;
-  if(!trips || !trips.length){ el.innerHTML = ""; return; }
-  el.innerHTML = trips.map(r=>{
+  if(!buses || !buses.length){ el.innerHTML = ""; return; }
+  el.innerHTML = buses.map(b=>{
+    const r = b.r;
     const col = ROUTE_COLORS[r.route] || "#888";
-    const pts = r.stops.map(([sn])=>{ const c=STOP_COORDS[sn]; return c ? lmXY(c[0],c[1]) : null; }).filter(Boolean);
-    if(pts.length < 2) return "";
-    const line = pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
-    const dots = pts.map(([x,y],i)=>{
-      const isEnd = i===0 || i===pts.length-1;
+    const pt = ([sn])=>{ const c=STOP_COORDS[sn]; return c ? lmXY(c[0],c[1]) : null; };
+    const allPts = r.stops.map(pt).filter(Boolean);
+    if(allPts.length < 2) return "";
+    const linePts = a => a.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+
+    const [bx,by] = lmXY(b.la, b.lo);
+    const past = r.stops.slice(0, b.idx+1).map(pt).filter(Boolean);
+    past.push([bx,by]);
+    const future = [[bx,by], ...r.stops.slice(b.idx+1).map(pt).filter(Boolean)];
+
+    const dots = allPts.map(([x,y],i)=>{
+      const isEnd = i===0 || i===allPts.length-1;
       return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isEnd?4.5:3}" fill="${col}" stroke="#fff" stroke-width="1.3"/>`;
     }).join("");
-    return `<polyline points="${line}" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
-      <polyline points="${line}" fill="none" stroke="${col}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+    return `<polyline points="${linePts(allPts)}" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+      <polyline points="${linePts(past)}" fill="none" stroke="${col}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.25"/>
+      <polyline points="${linePts(future)}" fill="none" stroke="${col}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
       ${dots}`;
   }).join("");
 }
