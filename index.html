@@ -238,26 +238,42 @@ body {
 }
 .sr-label.arr-label { background: #e8f0ff; color: #3355cc; }
 
-/* ── ニュースバナー ── */
+/* ── ニュースバナー（電光掲示板風マーキー） ── */
 .news-banner {
   display: block;
   margin: 14px 0 16px;
-  padding: 14px 16px;
+  padding: 12px 0;
   border-radius: var(--radius-lg);
   background: var(--amber-pale);
   border: 2px solid #2a6cb5;
   text-decoration: none;
   transition: background 0.12s;
+  overflow: hidden;
 }
 .news-banner:hover { background: #fff3d6; }
-.news-banner-head {
-  display: flex; align-items: center; gap: 8px;
+.news-banner-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+.news-banner-track {
+  display: inline-flex;
+  animation: news-marquee 16s linear infinite;
+}
+.news-banner-text {
+  display: inline-block;
+  padding-right: 56px;
   font-size: 14px; font-weight: 700; color: #a87a12;
   line-height: 1.5;
 }
-.news-banner-link {
-  margin: 6px 0 0 26px;
-  font-size: 12px; font-weight: 600; color: #a87a12;
+@keyframes news-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .news-banner-track { animation: none; }
+  .news-banner-marquee { overflow-x: auto; }
 }
 
 /* ── NOTICE ── */
@@ -1024,8 +1040,12 @@ body {
 
 <div class="main">
   <a class="news-banner" id="news-banner" href="https://www.vill.yomitan.okinawa.jp/soshiki/seikatsukankyo/gyomu/doro_kotsu/7100.html" target="_blank" rel="noopener" onclick="if(typeof gtag!=='undefined')gtag('event','news_banner_click',{'event_category':'お知らせ'})" style="display:none">
-    <div class="news-banner-head">📣 令和8年9月１日から運行ルート・時刻表が新しくなりました</div>
-    <div class="news-banner-link">詳細・新時刻表はこちら ›</div>
+    <div class="news-banner-marquee">
+      <div class="news-banner-track">
+        <span class="news-banner-text">📣 令和8年9月１日から運行ルート・時刻表が新しくなりました　タップで詳細・新時刻表を見る ›</span>
+        <span class="news-banner-text">📣 令和8年9月１日から運行ルート・時刻表が新しくなりました　タップで詳細・新時刻表を見る ›</span>
+      </div>
+    </div>
   </a>
 
   <button class="livemap-btn" onclick="openLiveMap()">
